@@ -82,8 +82,8 @@
         <div class="form-group" style="margin-bottom: 15px;">
           {{ form.password.label(class="form-label") }}
           <div style="position: relative;">
-            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Enter your password", id="login-password", autocomplete="new-password") }}
-            <span class="eye-icon" onclick="togglePasswordVisibility('login-password')" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6c757d; z-index: 10;">
+            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Enter your password", id="password", autocomplete="new-password") }}
+            <span class="eye-icon" onclick="togglePasswordVisibility('password')" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6c757d; z-index: 10;">
               <i class="bx bx-show"></i>
             </span>
           </div>
@@ -142,7 +142,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', function() {
-    var passwordInput = document.getElementById('login-password');
+    var passwordInput = document.getElementById('password');
     var eyeIconContainer = document.querySelector('.eye-icon');
     
     if(passwordInput && eyeIconContainer) {
@@ -165,14 +165,14 @@
   window.addEventListener('DOMContentLoaded', (event) => {
       setTimeout(() => {
           let emailField = document.getElementById('email');
-          let passField = document.getElementById('login-password');
+          let passField = document.getElementById('password');
           if (emailField) emailField.value = '';
           if (passField) passField.value = '';
       }, 50); // Small delay to catch Chrome's delayed autofill
       
       setTimeout(() => {
           let emailField = document.getElementById('email');
-          let passField = document.getElementById('login-password');
+          let passField = document.getElementById('password');
           if (emailField) emailField.value = '';
           if (passField) passField.value = '';
       }, 500); // Secondary catch for slower autofills
