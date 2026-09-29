@@ -19,16 +19,25 @@ class Config:
     REMEMBER_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     
-    # Construct PostgreSQL URI from environment variables
-    # Format: postgresql+psycopg2://USER:PASSWORD@HOST:PORT/DATABASE_NAME
-    # Note: Using psycopg2-binary adapter
-    db_user = os.environ.get('DATABASE_USER', 'postgres')
-    db_password = os.environ.get('DATABASE_PASSWORD', '')
-    db_host = os.environ.get('DATABASE_HOST', 'localhost')
-    db_port = os.environ.get('DATABASE_PORT', '5432')
-    db_name = os.environ.get('DATABASE_NAME', 'medibridge')
-
-    SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+    # Support Vercel Postgres automatically
+    if os.environ.get('POSTGRES_URL'):
+        # SQLAlchemy requires postgresql:// or postgresql+psycopg2://, not just postgres://
+        uri = os.environ.get('POSTGRES_URL')
+        if uri.startswith('postgres://'):
+            uri = uri.replace('postgres://', 'postgresql+psycopg2://', 1)
+        elif uri.startswith('postgresql://'):
+            uri = uri.replace('postgresql://', 'postgresql+psycopg2://', 1)
+        SQLALCHEMY_DATABASE_URI = uri
+    else:
+        # Construct PostgreSQL URI from environment variables
+        # Format: postgresql+psycopg2://USER:PASSWORD@HOST:PORT/DATABASE_NAME
+        # Note: Using psycopg2-binary adapter
+        db_user = os.environ.get('DATABASE_USER', 'postgres')
+        db_password = os.environ.get('DATABASE_PASSWORD', '')
+        db_host = os.environ.get('DATABASE_HOST', 'localhost')
+        db_port = os.environ.get('DATABASE_PORT', '5432')
+        db_name = os.environ.get('DATABASE_NAME', 'medibridge')
+        SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Google OAuth 2.0 Credentials
