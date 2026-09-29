@@ -8,6 +8,7 @@ from extensions import db
 from models import User, Assessment, Prescription
 import logging
 import secrets
+import os
 import urllib.parse
 import requests
 
@@ -81,7 +82,7 @@ def google_login():
     # Live Google OAuth 2.0 Flow
     state = secrets.token_hex(16)
     session['oauth_state'] = state
-    redirect_uri = current_app.config.get('GOOGLE_REDIRECT_URI', 'http://localhost:5000/auth/google/callback')
+    redirect_uri = os.environ.get('GOOGLE_REDIRECT_URI') or url_for('auth.google_callback', _external=True, _scheme='https')
 
     params = {
         'client_id': client_id,
@@ -141,7 +142,7 @@ def google_callback():
 
     client_id = current_app.config.get('GOOGLE_CLIENT_ID')
     client_secret = current_app.config.get('GOOGLE_CLIENT_SECRET')
-    redirect_uri = current_app.config.get('GOOGLE_REDIRECT_URI', 'http://localhost:5000/auth/google/callback')
+    redirect_uri = os.environ.get('GOOGLE_REDIRECT_URI') or url_for('auth.google_callback', _external=True, _scheme='https')
 
     # Exchange authorization code for tokens
     token_url = "https://oauth2.googleapis.com/token"
