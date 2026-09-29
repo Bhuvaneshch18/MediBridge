@@ -19,10 +19,11 @@ class Config:
     REMEMBER_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     
-    # Support Vercel Postgres automatically
-    if os.environ.get('POSTGRES_URL'):
+    # Support Vercel Postgres (or Neon/Supabase) automatically
+    db_url_env = os.environ.get('POSTGRES_URL') or os.environ.get('DATABASE_URL')
+    if db_url_env:
         # SQLAlchemy requires postgresql:// or postgresql+psycopg2://, not just postgres://
-        uri = os.environ.get('POSTGRES_URL')
+        uri = db_url_env
         if uri.startswith('postgres://'):
             uri = uri.replace('postgres://', 'postgresql+psycopg2://', 1)
         elif uri.startswith('postgresql://'):
