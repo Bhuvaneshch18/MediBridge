@@ -1,6 +1,6 @@
 Flask==2.2.2
-pandas==1.5.2
-scikit-learn==1.2.1
+pandas
+scikit-learn
 Flask-SQLAlchemy==3.0.2
 psycopg2-binary
 Flask-Migrate
@@ -11,3 +11,5 @@ email-validator
 google-genai
 python-dotenv
 requests
+
+Werkzeug==2.2.3
