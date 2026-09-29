@@ -2010,6 +2010,18 @@ def add_header(response):
     response.headers['Expires'] = '-1'
     return response
 
+@app.route('/debug_env')
+def debug_env():
+    import os
+    client_id = os.environ.get('GOOGLE_CLIENT_ID')
+    client_secret = os.environ.get('GOOGLE_CLIENT_SECRET')
+    return {
+        "has_client_id": bool(client_id),
+        "client_id_starts_with": client_id[:5] if client_id else None,
+        "has_client_secret": bool(client_secret),
+        "config_client_id": bool(app.config.get('GOOGLE_CLIENT_ID'))
+    }
+
 with app.app_context():
     try:
         db.create_all()
