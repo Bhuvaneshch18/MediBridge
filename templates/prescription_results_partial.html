@@ -1,0 +1,174 @@
+<!-- Layout Grid: Preview & Summary -->
+<div class="preview-summary-grid">
+  <!-- Preview -->
+  <div class="rx-preview">
+    <h4 style="margin-bottom: 10px; font-size: 1rem; color: var(--color-text);"><i class='bx bx-image'></i> Document Preview</h4>
+    <img id="prescriptionPreview" src="https://placehold.co/400x500/e2e8f0/94a3b8?text=Prescription+Scan" alt="Prescription Scan">
+  </div>
+
+  <!-- Summary & Notes -->
+  <div>
+    <h2 class="section-heading"><i class='bx bx-bar-chart-alt-2'></i> Prescription Summary</h2>
+    
+    <div class="summary-stats">
+      <div class="stat-card">
+        <i class='bx bx-capsule'></i>
+        <div class="value">{{ data.summary.medicines_count }}</div>
+        <div class="label">Medicines</div>
+      </div>
+      <div class="stat-card">
+        <i class='bx bx-calendar'></i>
+        <div class="value">{{ data.summary.days }}</div>
+        <div class="label">Days</div>
+      </div>
+      <div class="stat-card">
+        <i class='bx bx-sun'></i>
+        <div class="value">{{ data.summary.morning }}</div>
+        <div class="label">Morning</div>
+      </div>
+      <div class="stat-card">
+        <i class='bx bx-moon'></i>
+        <div class="value">{{ data.summary.night }}</div>
+        <div class="label">Night</div>
+      </div>
+    </div>
+
+    <div class="warning-card">
+      <h4><i class='bx bx-error'></i> Important Notes</h4>
+      <ul>
+        {% for note in data.summary.notes %}
+        <li>{{ note }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="ai-insight">
+      <i class='bx bx-bot'></i>
+      <h4>AI Explanation</h4>
+      <p>"{{ data.summary.ai_explanation }}"</p>
+    </div>
+  </div>
+</div>
+
+<!-- Medicine Detection Cards -->
+<h2 class="section-heading"><i class='bx bx-list-check'></i> Detected Medicines</h2>
+<div class="medicine-grid">
+  
+  {% for med in data.medicines %}
+  <div class="med-card">
+    <div class="med-header">
+      <div class="med-header-left">
+        <!-- Rotate colors/icons loosely based on type, using a generic capsule by default -->
+        <div class="med-icon" {% if loop.index % 2 == 0 %}style="background:#fef3c7; color:#d97706;"{% endif %}><i class='bx {% if 'Tablet' in med.type %}bx-capsule{% elif 'Syrup' in med.type %}bx-test-tube{% else %}bx-circle{% endif %}'></i></div>
+        <div>
+          <h3 class="med-title">{{ med.name }}</h3>
+          <p class="med-generic">Generic: {{ med.generic }}</p>
+        </div>
+      </div>
+      <span class="med-type-badge">{{ med.type }}</span>
+    </div>
+    <div class="med-body">
+      <div class="med-detail-group">
+        <h5>Dosage & Timing</h5>
+        <p><span class="highlight-timing">{{ med.dosage }}</span></p>
+        <p style="margin-top: 5px;">
+          {% for time in med.timing %}
+          <span class="highlight-timing {% if 'After' in time %}after{% elif 'Before' in time %}before{% endif %}">{{ time }}</span>
+          {% endfor %}
+        </p>
+        <p style="margin-top: 5px; color: var(--color-text-muted); font-size: 0.85rem;"><i class='bx bx-time'></i> Duration: {{ med.duration }}</p>
+      </div>
+      <div class="med-detail-group">
+        <h5>Purpose & Treatment</h5>
+        <p>{{ med.purpose }}</p>
+        <h5 style="margin-top: 15px;">Treats:</h5>
+        <ul>
+          {% for t in med.treats %}
+          <li>{{ t }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="med-detail-group">
+        <h5>How it works</h5>
+        <p>{{ med.how_it_works }}</p>
+      </div>
+      <div class="med-detail-group">
+        <h5>Side Effects & Precautions</h5>
+        <p><strong>Side Effects:</strong> {{ med.side_effects }}</p>
+        <p style="margin-top: 10px;"><strong>Precautions:</strong> {{ med.precautions }}</p>
+        <p style="margin-top: 10px;"><strong>Missed Dose:</strong> {{ med.missed_dose }}</p>
+        <p style="margin-top: 10px;"><strong>Storage:</strong> {{ med.storage }}</p>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
+
+<!-- Daily Medicine Schedule -->
+<h2 class="section-heading"><i class='bx bx-time-five'></i> Daily Schedule</h2>
+<div class="timeline">
+  
+  <!-- Morning -->
+  <div class="timeline-item morning">
+    <div class="timeline-icon"><i class='bx bx-sun'></i></div>
+    <div class="timeline-content">
+      <h4>Morning <span><i class='bx bx-coffee'></i></span></h4>
+      {% if data.schedule.morning|length > 0 %}
+        {% for m in data.schedule.morning %}
+        <div class="timeline-med">
+          <i class='bx bx-check-circle'></i> {{ m }}
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="timeline-med" style="color: var(--color-text-muted); font-style: italic;">
+          No medicines scheduled.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Afternoon -->
+  <div class="timeline-item afternoon">
+    <div class="timeline-icon"><i class='bx bxs-sun'></i></div>
+    <div class="timeline-content">
+      <h4>Afternoon <span><i class='bx bx-bowl-hot'></i></span></h4>
+      {% if data.schedule.afternoon|length > 0 %}
+        {% for m in data.schedule.afternoon %}
+        <div class="timeline-med">
+          <i class='bx bx-check-circle'></i> {{ m }}
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="timeline-med" style="color: var(--color-text-muted); font-style: italic;">
+          No medicines scheduled.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Night -->
+  <div class="timeline-item night">
+    <div class="timeline-icon"><i class='bx bx-moon'></i></div>
+    <div class="timeline-content">
+      <h4>Night <span><i class='bx bx-dish'></i></span></h4>
+      {% if data.schedule.night|length > 0 %}
+        {% for m in data.schedule.night %}
+        <div class="timeline-med">
+          <i class='bx bx-check-circle'></i> {{ m }}
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="timeline-med" style="color: var(--color-text-muted); font-style: italic;">
+          No medicines scheduled.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+<!-- Disclaimer -->
+<div class="disclaimer">
+  <strong>Disclaimer:</strong> This information is generated by AI for educational purposes only. Always follow your doctor's prescription. Do not start, stop, or change medicines without consulting a qualified healthcare professional.
+</div>

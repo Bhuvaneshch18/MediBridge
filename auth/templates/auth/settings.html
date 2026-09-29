@@ -1,0 +1,610 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+  /* Base Dashboard Layout */
+  .dashboard-container {
+    max-width: 800px;
+    margin: 40px auto 80px;
+    padding: 0 20px;
+    animation: fadeIn 0.6s ease-out;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  /* Header Section */
+  .dashboard-header {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .dashboard-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    margin-bottom: 10px;
+  }
+  .dashboard-subtitle {
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+  }
+
+  /* Premium Glass Card Style */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  [data-theme='light'] .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+  }
+  .glass-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  }
+  
+  .card-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 10px;
+  }
+  [data-theme='light'] .card-title {
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+  }
+
+  /* HOSPITAL PREFERENCES */
+  .pref-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+  }
+  [data-theme='light'] .pref-box {
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  .pref-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--color-text);
+    font-size: 0.95rem;
+    transition: all 0.2s;
+  }
+  [data-theme='light'] .pref-input {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+  }
+  .pref-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
+  }
+
+  /* SECTION 6: ACCOUNT SETTINGS */
+  .settings-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  .settings-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 10px;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+  .settings-btn:hover {
+    background: var(--color-primary);
+    color: white;
+  }
+
+  /* SECTION 7: LOGOUT */
+  .logout-btn-large {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    background: var(--color-surface);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--color-text);
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+  [data-theme='light'] .logout-btn-large {
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+  .logout-btn-large:hover {
+    background: var(--color-bg);
+    color: var(--color-primary);
+  }
+
+  /* DANGER ZONE */
+  details.danger-zone {
+    background: rgba(220, 53, 69, 0.05);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  details.danger-zone summary {
+    padding: 15px 20px;
+    color: #dc3545;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  details.danger-zone summary::-webkit-details-marker {
+    display: none;
+  }
+  details.danger-zone summary::after {
+    content: '▼';
+    font-size: 0.8rem;
+    transition: transform 0.3s;
+  }
+  details.danger-zone[open] summary::after {
+    transform: rotate(180deg);
+  }
+  .danger-content {
+    padding: 20px;
+    border-top: 1px solid rgba(220, 53, 69, 0.2);
+  }
+  .btn-danger {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 15px;
+    transition: background 0.3s;
+  }
+  .btn-danger:hover {
+    background: #c82333;
+  }
+
+  /* MODALS FOR ACCOUNT SETTINGS */
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease-out;
+  }
+  .custom-modal {
+    background: var(--color-surface);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  [data-theme='light'] .custom-modal {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 25px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  [data-theme='light'] .modal-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .modal-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .modal-close {
+    background: transparent;
+    border: none;
+    font-size: 1.8rem;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+  .modal-close:hover { color: var(--color-primary); }
+  .modal-body { padding: 25px; }
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 15px 25px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.1);
+  }
+  [data-theme='light'] .modal-footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.02);
+  }
+  .btn-cancel {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: transparent;
+    color: var(--color-text);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  [data-theme='light'] .btn-cancel {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+  }
+  .btn-cancel:hover { background: rgba(255,255,255,0.05); }
+  .btn-submit {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    background: var(--color-primary);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+  .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  [data-theme='light'] .toggle-row {
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  .custom-switch {
+    width: 20px; height: 20px;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+</style>
+
+<div class="dashboard-container">
+  
+  <!-- Header -->
+  <div class="dashboard-header">
+    <h1 class="dashboard-title">Account Settings</h1>
+    <p class="dashboard-subtitle">Manage your preferences, security, and account information.</p>
+  </div>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div>
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" style="margin-bottom: 10px; padding: 15px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid var(--color-border); color: var(--color-text);">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- SECTION: HOSPITAL & LOCATION PREFERENCES -->
+  <div class="glass-card">
+    <div class="card-title"><i class='bx bx-current-location'></i> Hospital Finder Preferences</div>
+    <p style="color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 18px; line-height: 1.5;">
+      Manage how MediBridge finds nearby specialized hospitals. When enabled, your default city or approximate location will be used automatically without repetitive browser location prompts.
+    </p>
+    <form action="{{ url_for('auth.update_location_preferences') }}" method="POST">
+      {{ location_form.hidden_tag() }}
+      <div class="pref-box">
+        <div>
+          <strong style="display: block; color: var(--color-text); font-size: 0.95rem; margin-bottom: 2px;">Allow Location Access</strong>
+          <span style="font-size: 0.8rem; color: var(--color-text-muted);">Enable instant distance sorting on hospital finder</span>
+        </div>
+        <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+          {{ location_form.allow_location(style="width: 18px; height: 18px; accent-color: var(--color-primary); cursor: pointer;") }}
+        </label>
+      </div>
+      <div style="margin-bottom: 18px;">
+        <label style="display: block; color: var(--color-text); font-size: 0.9rem; font-weight: 600; margin-bottom: 6px;">Default City / Pincode (Optional)</label>
+        {{ location_form.preferred_location(class="pref-input", placeholder="e.g., Mumbai, New Delhi, or 400001") }}
+        <span style="font-size: 0.75rem; color: var(--color-text-muted); display: block; margin-top: 6px;">If specified, this location will be pre-filled when searching for nearby hospitals.</span>
+      </div>
+      <button type="submit" class="settings-btn" style="width: 100%; justify-content: center; background: var(--color-primary); color: #fff; border: none; font-weight: 600; cursor: pointer; padding: 12px; font-size: 0.95rem;"><i class='bx bx-save'></i> Save Location Preferences</button>
+    </form>
+  </div>
+
+  <!-- SECTION 6: ACCOUNT SETTINGS -->
+  <div class="glass-card">
+    <div class="card-title"><i class='bx bx-cog'></i> Security & Privacy</div>
+    <div class="settings-grid">
+      <a href="#" onclick="openModal('editProfileModal'); return false;" class="settings-btn"><i class='bx bx-edit'></i> Edit Profile Details</a>
+      <a href="#" onclick="openModal('changePasswordModal'); return false;" class="settings-btn"><i class='bx bx-lock-alt'></i> Change Password</a>
+      <a href="#" onclick="openModal('notificationModal'); return false;" class="settings-btn"><i class='bx bx-bell'></i> Notification Preferences</a>
+      <a href="#" onclick="openModal('privacyModal'); return false;" class="settings-btn"><i class='bx bx-shield-quarter'></i> Privacy Settings & Export</a>
+    </div>
+  </div>
+
+  <!-- SECTION 7: LOGOUT -->
+  <a href="{{ url_for('auth.logout') }}" class="logout-btn-large">
+    <i class='bx bx-log-out-circle' style="font-size: 1.5rem; color: var(--color-primary);"></i> Logout
+  </a>
+
+  <!-- DANGER ZONE -->
+  <details class="danger-zone">
+    <summary><i class='bx bx-error-circle'></i> Danger Zone</summary>
+    <div class="danger-content">
+      <p style="color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 10px;">Once you delete your account, all your health records and data will be permanently erased. This action cannot be undone.</p>
+      <form action="{{ url_for('auth.delete_account') }}" method="POST" onsubmit="return confirm('Are you absolutely sure you want to permanently delete your account? This action cannot be undone.');">
+        {{ form.hidden_tag() }}
+        <button type="submit" class="btn-danger"><i class='bx bx-trash'></i> Delete Account Permanently</button>
+      </form>
+    </div>
+  </details>
+
+</div>
+
+<!-- 1. EDIT PROFILE MODAL -->
+<div id="editProfileModal" class="modal-backdrop">
+  <div class="custom-modal">
+    <div class="modal-header">
+      <h3><i class='bx bx-edit'></i> Edit Profile Information</h3>
+      <button type="button" class="modal-close" onclick="closeModal('editProfileModal')">&times;</button>
+    </div>
+    <form action="{{ url_for('auth.update_profile') }}" method="POST">
+      {{ update_profile_form.hidden_tag() }}
+      <div class="modal-body">
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; font-weight: 600; margin-bottom: 5px; color: var(--color-text);">Full Name</label>
+          {{ update_profile_form.full_name(class="pref-input", required=True) }}
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; font-weight: 600; margin-bottom: 5px; color: var(--color-text);">Phone Number</label>
+          {{ update_profile_form.phone_number(class="pref-input", placeholder="e.g. +91 9876543210") }}
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; font-weight: 600; margin-bottom: 5px; color: var(--color-text);">Gender</label>
+          <select name="gender" class="pref-input">
+            <option value="">Select Gender...</option>
+            <option value="Male" {% if current_user.gender == 'Male' %}selected{% endif %}>Male</option>
+            <option value="Female" {% if current_user.gender == 'Female' %}selected{% endif %}>Female</option>
+            <option value="Other" {% if current_user.gender == 'Other' %}selected{% endif %}>Other</option>
+            <option value="Prefer not to say" {% if current_user.gender == 'Prefer not to say' %}selected{% endif %}>Prefer not to say</option>
+          </select>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; font-weight: 600; margin-bottom: 5px; color: var(--color-text);">Date of Birth</label>
+          <input type="date" name="date_of_birth" class="pref-input" value="{{ current_user.date_of_birth or '' }}">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeModal('editProfileModal')">Cancel</button>
+        <button type="submit" class="btn-submit"><i class='bx bx-save'></i> Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 2. CHANGE PASSWORD MODAL -->
+<div id="changePasswordModal" class="modal-backdrop">
+  <div class="custom-modal">
+    <div class="modal-header">
+      <h3><i class='bx bx-lock-alt'></i> Change Account Password</h3>
+      <button type="button" class="modal-close" onclick="closeModal('changePasswordModal')">&times;</button>
+    </div>
+    <form action="{{ url_for('auth.change_password_route') }}" method="POST">
+      {{ change_password_form.hidden_tag() }}
+      <div class="modal-body">
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; font-weight: 600; margin-bottom: 5px; color: var(--color-text);">Current Password</label>
+          {{ change_password_form.current_password(class="pref-input", required=True) }}
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; font-weight: 600; margin-bottom: 5px; color: var(--color-text);">New Password</label>
+          {{ change_password_form.new_password(class="pref-input", required=True) }}
+          <span style="font-size: 0.75rem; color: var(--color-text-muted);">Must be at least 8 characters with letters, numbers, and symbols.</span>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; font-weight: 600; margin-bottom: 5px; color: var(--color-text);">Confirm New Password</label>
+          {{ change_password_form.confirm_password(class="pref-input", required=True) }}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeModal('changePasswordModal')">Cancel</button>
+        <button type="submit" class="btn-submit"><i class='bx bx-key'></i> Update Password</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 3. NOTIFICATION PREFERENCES MODAL -->
+<div id="notificationModal" class="modal-backdrop">
+  <div class="custom-modal">
+    <div class="modal-header">
+      <h3><i class='bx bx-bell'></i> Notification & Alert Preferences</h3>
+      <button type="button" class="modal-close" onclick="closeModal('notificationModal')">&times;</button>
+    </div>
+    <form action="{{ url_for('auth.update_notifications') }}" method="POST">
+      {{ notification_form.hidden_tag() }}
+      <div class="modal-body">
+        <div class="toggle-row">
+          <div>
+            <strong style="display: block; color: var(--color-text);">Assessment Email Alerts</strong>
+            <span style="font-size: 0.8rem; color: var(--color-text-muted);">Receive an email summary whenever you complete a new disease prediction assessment.</span>
+          </div>
+          <input type="checkbox" name="email_alerts" class="custom-switch" checked>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <strong style="display: block; color: var(--color-text);">Weekly Health Summary Digest</strong>
+            <span style="font-size: 0.8rem; color: var(--color-text-muted);">Get a weekly recap of your health statistics, assessment history, and check-up reminders.</span>
+          </div>
+          <input type="checkbox" name="weekly_digest" class="custom-switch" checked>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <strong style="display: block; color: var(--color-text);">Security & Device Login Alerts</strong>
+            <span style="font-size: 0.8rem; color: var(--color-text-muted);">Get notified immediately if a sign-in occurs from an unrecognized browser or device.</span>
+          </div>
+          <input type="checkbox" name="security_alerts" class="custom-switch" checked>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <strong style="display: block; color: var(--color-text);">Nearby Hospital Recommendations</strong>
+            <span style="font-size: 0.8rem; color: var(--color-text-muted);">Receive updates when specialized hospitals are added in your preferred location.</span>
+          </div>
+          <input type="checkbox" name="hospital_alerts" class="custom-switch">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeModal('notificationModal')">Cancel</button>
+        <button type="submit" class="btn-submit"><i class='bx bx-check-circle'></i> Save Preferences</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 4. PRIVACY SETTINGS MODAL -->
+<div id="privacyModal" class="modal-backdrop">
+  <div class="custom-modal">
+    <div class="modal-header">
+      <h3><i class='bx bx-shield-quarter'></i> Privacy & Data Settings</h3>
+      <button type="button" class="modal-close" onclick="closeModal('privacyModal')">&times;</button>
+    </div>
+    <form action="{{ url_for('auth.update_privacy') }}" method="POST">
+      {{ privacy_form.hidden_tag() }}
+      <div class="modal-body">
+        <div class="toggle-row">
+          <div>
+            <strong style="display: block; color: var(--color-text);">Anonymized Research Sharing</strong>
+            <span style="font-size: 0.8rem; color: var(--color-text-muted);">Allow MediBridge to use de-identified assessment metrics to refine diagnostic machine learning models.</span>
+          </div>
+          <input type="checkbox" name="research_sharing" class="custom-switch" checked>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <strong style="display: block; color: var(--color-text);">AI Health Insights Personalization</strong>
+            <span style="font-size: 0.8rem; color: var(--color-text-muted);">Enable MediBridge AI to analyze your past questionnaires and prescriptions to tailor wellness recommendations.</span>
+          </div>
+          <input type="checkbox" name="ai_insights" class="custom-switch" checked>
+        </div>
+        <div style="margin: 20px 0;">
+          <label style="display: block; font-weight: 600; margin-bottom: 6px; color: var(--color-text);">Profile & Activity Visibility</label>
+          <select name="profile_visibility" class="pref-input">
+            <option value="private">Private (Only Me)</option>
+            <option value="providers">Authorized Healthcare Providers Only</option>
+            <option value="community">Community / Anonymized Leaderboard</option>
+          </select>
+          <span style="font-size: 0.75rem; color: var(--color-text-muted); display: block; margin-top: 4px;">Controls who can view your overall health assessment milestones and statistics.</span>
+        </div>
+        <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+          <strong style="display: block; color: var(--color-text); margin-bottom: 4px;">Data Portability & Export</strong>
+          <span style="font-size: 0.8rem; color: var(--color-text-muted); display: block; margin-bottom: 12px;">Download a complete JSON copy of your personal account records and assessment logs.</span>
+          <button type="button" onclick="downloadHealthData()" class="settings-btn" style="width: 100%; background: rgba(20, 184, 166, 0.15); border-color: var(--color-primary); cursor: pointer;"><i class='bx bx-download'></i> Download My Health Data (JSON)</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeModal('privacyModal')">Cancel</button>
+        <button type="submit" class="btn-submit"><i class='bx bx-save'></i> Save Privacy Settings</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openModal(modalId) {
+    const m = document.getElementById(modalId);
+    if (m) {
+      m.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+  }
+  function closeModal(modalId) {
+    const m = document.getElementById(modalId);
+    if (m) {
+      m.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+  }
+  window.addEventListener('click', function(event) {
+    if (event.target.classList.contains('modal-backdrop')) {
+      event.target.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+  });
+
+  function downloadHealthData() {
+    const data = {
+      user: {
+        name: "{{ current_user.full_name }}",
+        email: "{{ current_user.email }}",
+        phone: "{{ current_user.phone_number or 'N/A' }}",
+        gender: "{{ current_user.gender or 'N/A' }}",
+        dob: "{{ current_user.date_of_birth or 'N/A' }}",
+        member_since: "{{ current_user.created_at.strftime('%Y-%m-%d') if current_user.created_at else 'N/A' }}"
+      },
+      export_timestamp: new Date().toISOString(),
+      platform: "MediBridge AI Health Suite",
+      status: "Verified Portability Export"
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `medibridge_health_data_${data.user.name.toLowerCase().replace(/\s+/g, '_')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    alert("Your MediBridge health data archive has been downloaded successfully!");
+  }
+</script>
+{% endblock %}

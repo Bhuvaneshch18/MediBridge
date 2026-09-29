@@ -1,0 +1,580 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+  /* Prescription Analyzer Page Styles */
+  .rx-hero {
+    background: linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(34, 197, 94, 0.1));
+    padding: 60px 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .rx-hero h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 16px;
+  }
+  .rx-hero p {
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    max-width: 650px;
+    margin: 0 auto;
+  }
+
+  /* Upload Section */
+  .upload-container {
+    max-width: 700px;
+    margin: 40px auto;
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: 40px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    text-align: center;
+    transition: var(--transition);
+  }
+  .drag-area {
+    border: 2px dashed var(--color-primary);
+    border-radius: var(--radius-md);
+    padding: 40px 20px;
+    background: var(--color-surface);
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+  }
+  .drag-area:hover, .drag-area.active {
+    background: var(--color-primary-light);
+  }
+  .drag-area i {
+    font-size: 3rem;
+    color: var(--color-primary);
+    margin-bottom: 16px;
+  }
+  .drag-area h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 10px;
+  }
+  .drag-area p {
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    margin-bottom: 20px;
+  }
+  .drag-area button {
+    padding: 10px 24px;
+    font-size: 1rem;
+  }
+  .file-info {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin-top: 15px;
+    display: block;
+  }
+
+  /* Upload Progress */
+  .upload-progress-wrapper {
+    display: none;
+    margin-top: 30px;
+  }
+  .progress-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 10px;
+  }
+  .progress-bar-bg {
+    width: 100%;
+    height: 8px;
+    background: var(--color-border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--color-primary);
+    transition: width 0.3s ease;
+  }
+  
+  .success-animation {
+    display: none;
+    margin-top: 20px;
+    color: #10b981;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  .success-animation i {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 10px;
+    animation: scaleIn 0.5s ease;
+  }
+  @keyframes scaleIn {
+    0% { transform: scale(0); opacity: 0; }
+    80% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* Results Section */
+  .results-section {
+    display: none; /* Shown after upload */
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    margin-top: 40px;
+  }
+  
+  .section-heading {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 2px solid var(--color-primary-light);
+    padding-bottom: 10px;
+  }
+
+  /* Layout Grid for Preview and Summary */
+  .preview-summary-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 30px;
+    margin-bottom: 40px;
+  }
+  @media (max-width: 900px) {
+    .preview-summary-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Prescription Preview */
+  .rx-preview {
+    background: var(--color-surface);
+    padding: 15px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+  }
+  .rx-preview img {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+  }
+
+  /* Summary Cards */
+  .summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--color-surface);
+    padding: 20px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    text-align: center;
+  }
+  .stat-card i {
+    font-size: 2rem;
+    color: var(--color-primary);
+    margin-bottom: 10px;
+  }
+  .stat-card .value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+  .stat-card .label {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Important Notes */
+  .warning-card {
+    background: #fff1f2;
+    border-left: 4px solid #f43f5e;
+    padding: 20px;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    margin-bottom: 30px;
+  }
+  .warning-card h4 {
+    color: #be123c;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .warning-card ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #9f1239;
+    font-size: 0.95rem;
+  }
+
+  /* AI Explanation */
+  .ai-insight {
+    background: linear-gradient(to right, rgba(20, 184, 166, 0.05), rgba(14, 165, 233, 0.05));
+    border: 1px solid var(--color-primary-light);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    margin-bottom: 40px;
+    position: relative;
+  }
+  .ai-insight i.bx-bot {
+    position: absolute;
+    top: -15px;
+    left: 20px;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 1.5rem;
+    padding: 8px;
+    border-radius: 50%;
+    box-shadow: var(--shadow-sm);
+  }
+  .ai-insight h4 {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    color: var(--color-primary);
+  }
+  .ai-insight p {
+    color: var(--color-text);
+    line-height: 1.6;
+    font-size: 1.05rem;
+  }
+
+  /* Medicine Detection Cards */
+  .medicine-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+  .med-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+  }
+  .med-header {
+    background: var(--color-surface);
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .med-header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  .med-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+  }
+  .med-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0 0 4px;
+  }
+  .med-generic {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+  .med-type-badge {
+    background: #e2e8f0;
+    color: var(--color-text);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .med-body {
+    padding: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+  }
+  .med-detail-group h5 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+  .med-detail-group p {
+    font-size: 0.95rem;
+    color: var(--color-text);
+    margin: 0;
+    line-height: 1.5;
+  }
+  .med-detail-group ul {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--color-text);
+    font-size: 0.95rem;
+  }
+  .highlight-timing {
+    display: inline-block;
+    background: #dcfce7;
+    color: #166534;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-right: 5px;
+  }
+  .highlight-timing.after { background: #dbeafe; color: #1e40af; }
+  .highlight-timing.before { background: #fef9c3; color: #854d0e; }
+
+  /* Daily Schedule Timeline */
+  .timeline {
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto 60px;
+    padding-left: 30px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--color-border);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+  }
+  .timeline-icon {
+    position: absolute;
+    left: -43px;
+    top: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    box-shadow: 0 0 0 4px #fff;
+  }
+  .timeline-item.morning .timeline-icon { background: #f59e0b; }
+  .timeline-item.afternoon .timeline-icon { background: #0ea5e9; }
+  .timeline-item.night .timeline-icon { background: #334155; }
+  
+  .timeline-content {
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    padding: 15px 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+  }
+  .timeline-content h4 {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    color: var(--color-text);
+    display: flex;
+    justify-content: space-between;
+  }
+  .timeline-med {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .timeline-med:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .timeline-med i {
+    color: var(--color-primary);
+  }
+
+  /* Disclaimer */
+  .disclaimer {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    padding: 20px;
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    text-align: center;
+  }
+</style>
+
+<!-- Hero Section -->
+<section class="rx-hero fade-in">
+  <h1>Prescription Analyzer</h1>
+  <p>Upload your doctor's prescription and understand your medicines in simple language.</p>
+</section>
+
+<div class="container page-wrapper">
+  
+  <!-- Upload Section -->
+  <div class="upload-container fade-in" id="uploadContainer">
+    <div class="drag-area" id="dragArea" onclick="document.getElementById('fileInput').click()">
+      <input type="file" id="fileInput" style="display: none;" accept=".jpg,.jpeg,.png,.pdf" onchange="handleFileSelect(event)">
+      <i class='bx bx-cloud-upload'></i>
+      <h3>Drag & Drop your Prescription here</h3>
+      <p>or click to browse from your device</p>
+      <button class="btn btn-primary" type="button">Browse File</button>
+      <span class="file-info">Supports JPG, PNG, JPEG, and PDF (Max 4MB)</span>
+    </div>
+    
+    <!-- Upload Progress -->
+    <div class="upload-progress-wrapper" id="progressWrapper">
+      <div class="progress-text">Analyzing Prescription with AI...</div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressBar"></div>
+      </div>
+    </div>
+    
+    <!-- Success Animation -->
+    <div class="success-animation" id="successAnim">
+      <i class='bx bx-check-circle'></i>
+      Analysis Complete!
+    </div>
+  </div>
+
+  <!-- Results Section (Hidden until upload completes) -->
+  <div class="results-section" id="resultsSection">
+    <!-- Populated by AI -->
+  </div> <!-- End Results Section -->
+
+</div>
+
+<script>
+  // Mock Upload Flow
+  let isUploading = false;
+  
+  function handleFileSelect(event) {
+    if (isUploading) return;
+    
+    if (event.target.files && event.target.files.length > 0) {
+      const file = event.target.files[0];
+      
+      let previewUrl = '';
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          previewUrl = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        previewUrl = 'https://placehold.co/400x500/e2e8f0/94a3b8?text=' + encodeURIComponent(file.name);
+      }
+
+      triggerUpload(file, () => previewUrl);
+    }
+  }
+
+  function triggerUpload(file, getPreviewUrl) {
+    if (isUploading) return;
+    isUploading = true;
+    
+    const dragArea = document.getElementById('dragArea');
+    const progressWrapper = document.getElementById('progressWrapper');
+    const progressBar = document.getElementById('progressBar');
+    const successAnim = document.getElementById('successAnim');
+    const resultsSection = document.getElementById('resultsSection');
+    
+    // Hide drag area, show progress
+    dragArea.style.display = 'none';
+    progressWrapper.style.display = 'block';
+    progressBar.style.width = '30%';
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // Send file to AI backend
+    fetch('/analyze_prescription', {
+      method: 'POST',
+      body: formData
+    })
+    .then(async response => {
+      if (!response.ok) {
+        let errMessage = 'Analysis failed';
+        try {
+          const errData = await response.json();
+          if (errData.error) errMessage = errData.error;
+        } catch(e) {}
+        throw new Error(errMessage);
+      }
+      return response.text();
+    })
+    .then(html => {
+      progressBar.style.width = '100%';
+      
+      // Show success and results
+      setTimeout(() => {
+        progressWrapper.style.display = 'none';
+        successAnim.style.display = 'block';
+        
+        setTimeout(() => {
+          successAnim.style.display = 'none';
+          document.getElementById('uploadContainer').style.display = 'none';
+          
+          // Inject dynamic HTML from AI
+          resultsSection.innerHTML = html;
+          
+          // Update preview image
+          const previewImg = document.getElementById('prescriptionPreview');
+          if(previewImg) {
+            previewImg.src = getPreviewUrl();
+          }
+
+          // Show results
+          resultsSection.style.display = 'block';
+          setTimeout(() => {
+            resultsSection.style.opacity = '1';
+          }, 50);
+        }, 1000);
+      }, 500);
+    })
+    .catch(error => {
+      console.error(error);
+      const errorMsg = document.createElement('div');
+      errorMsg.style.color = '#ef4444';
+      errorMsg.style.marginTop = '15px';
+      errorMsg.style.fontWeight = '600';
+      errorMsg.innerText = error.message || "Error analyzing prescription. Please try again.";
+      
+      dragArea.appendChild(errorMsg);
+      
+      dragArea.style.display = 'block';
+      progressWrapper.style.display = 'none';
+      progressBar.style.width = '0%';
+      
+      setTimeout(() => {
+        if(errorMsg.parentNode) errorMsg.remove();
+      }, 5000);
+    })
+    .finally(() => {
+      isUploading = false;
+    });
+  }
+</script>
+{% endblock %}

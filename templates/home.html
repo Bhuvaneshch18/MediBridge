@@ -1,0 +1,650 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <style>
+    .hero-section {
+      min-height: 85vh;
+      display: flex;
+      align-items: center;
+      padding-top: 80px !important;
+      padding-bottom: 80px !important;
+    }
+    .hero-title {
+      font-size: 4.5rem !important;
+      line-height: 1.15 !important;
+      margin-bottom: 24px !important;
+    }
+    .hero-quote {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--color-primary);
+      margin-bottom: 24px;
+      font-style: italic;
+      border-left: 4px solid var(--color-primary);
+      padding-left: 16px;
+    }
+    .typing-cursor {
+      font-weight: 300;
+      color: var(--color-primary);
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+    @media (max-width: 768px) {
+      .hero-title { font-size: 3rem !important; }
+      .hero-quote { font-size: 1.2rem; }
+    }
+    
+    /* Permanent Greeting Card */
+    .greeting-section {
+      width: 100%;
+      padding: 30px 40px;
+      margin-top: 20px;
+      margin-bottom: -40px; /* pull hero up slightly */
+      animation: fadeIn 0.8s ease-out;
+      z-index: 10;
+      position: relative;
+    }
+    .greeting-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px 32px;
+      max-width: 650px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    }
+    [data-theme='light'] .greeting-card {
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+    }
+    .greeting-time {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 8px;
+    }
+    .greeting-sub {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 4px;
+    }
+    .greeting-text {
+      font-size: 1rem;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+    @media (max-width: 768px) {
+      .greeting-section { padding: 20px; }
+      .greeting-card { padding: 20px; }
+      .greeting-time { font-size: 1.5rem; }
+      .greeting-sub { font-size: 1.1rem; }
+    }
+  </style>
+
+  <!-- PERMANENT GREETING SECTION -->
+  {% if current_user.is_authenticated %}
+  <section class="greeting-section fade-in">
+    <div class="greeting-card">
+      <div class="greeting-time" id="dynamicGreeting">👋 Hello, {{ current_user.full_name }}</div>
+      
+      {% if current_user.login_count == 1 %}
+        <div class="greeting-sub">Welcome to MediBridge</div>
+        <div class="greeting-text">Thank you for joining us.<br>Let's begin your healthcare journey together.</div>
+      {% else %}
+        <div class="greeting-sub">Welcome back to MediBridge</div>
+        <div class="greeting-text">Continue your preventive healthcare journey.</div>
+      {% endif %}
+    </div>
+  </section>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const hour = new Date().getHours();
+      let timeGreeting = "👋 Hello";
+      
+      if (hour >= 5 && hour < 12) {
+        timeGreeting = "🌅 Good Morning";
+      } else if (hour >= 12 && hour < 17) {
+        timeGreeting = "☀️ Good Afternoon";
+      } else if (hour >= 17 && hour <= 23) {
+        timeGreeting = "🌙 Good Evening";
+      } else {
+        timeGreeting = "🌌 Good Night";
+      }
+      
+      const greetingEl = document.getElementById("dynamicGreeting");
+      if(greetingEl) {
+        greetingEl.innerText = `${timeGreeting}, {{ current_user.full_name }}`;
+      }
+    });
+  </script>
+  {% endif %}
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div style="max-width: 800px; margin: 20px auto 0; padding: 0 20px; z-index: 1000; position: relative;">
+        {% for category, message in messages %}
+          <div class="flash-message flash-{{ category }}" style="padding: 15px; border-radius: 8px; margin-bottom: 10px; text-align: center; font-weight: 500; background: {% if category == 'success' %}rgba(16, 185, 129, 0.1){% else %}rgba(59, 130, 246, 0.1){% endif %}; color: {% if category == 'success' %}#10B981{% else %}#3B82F6{% endif %}; border: 1px solid {% if category == 'success' %}rgba(16, 185, 129, 0.2){% else %}rgba(59, 130, 246, 0.2){% endif %};">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- HERO SECTION -->
+  <section class="hero-section fade-in">
+    <div class="hero-content">
+      <div class="trust-badge">
+        <i class='bx bx-shield-plus'></i> AI Healthcare Platform
+      </div>
+      <h1 class="hero-title">
+        Your AI Healthcare <br><span id="typing-word" style="color: var(--color-primary);">Companion</span><span class="typing-cursor">|</span>
+      </h1>
+      <p class="hero-quote">
+        "Prevention is better than cure."
+      </p>
+      <p class="hero-desc" style="font-size: 1.15rem; line-height: 1.6; margin-bottom: 32px;">
+        Predict diseases, understand your prescriptions, find nearby hospitals, and take control of your health—all in one platform.
+      </p>
+      <div class="hero-buttons">
+        <a href="/wellness" class="btn-primary">
+          <i class='bx bx-check-shield'></i> Daily Wellness Score
+        </a>
+        <a href="/diseases" class="btn-secondary">
+          Explore Diseases
+        </a>
+      </div>
+    </div>
+    
+    <div class="hero-image float-anim">
+      <img src="../static/hero_dashboard.jpg" alt="MediBridge Dashboard">
+    </div>
+  </section>
+
+  <!-- STATISTICS SECTION -->
+  <section class="stats-section fade-in">
+    <div class="stat-card">
+      <h3 class="counter" data-target="7">0</h3>
+      <p>Diseases Supported</p>
+    </div>
+    <div class="stat-card">
+      <h3 class="counter" data-target="15000">0</h3>
+      <p>Predictions Completed</p>
+    </div>
+    <div class="stat-card">
+      <h3 class="counter" data-target="120">0</h3>
+      <p>Health Articles</p>
+    </div>
+    <div class="stat-card">
+      <h3 class="counter" data-target="350">0</h3>
+      <p>Nearby Hospitals</p>
+    </div>
+  </section>
+
+  <!-- SERVICES SECTION -->
+  <section class="services-section fade-in">
+    <div class="section-header">
+      <h2>Our Services</h2>
+      <p>Comprehensive healthcare solutions powered by advanced AI.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card lift-anim">
+        <div class="icon-wrapper"><i class='bx bx-pulse'></i></div>
+        <h3>Disease Prediction</h3>
+        <p>Advanced AI models to predict potential health risks based on your data.</p>
+        <a href="/diseases" class="explore-btn">Explore <i class='bx bx-right-arrow-alt'></i></a>
+      </div>
+      <div class="service-card lift-anim">
+        <div class="icon-wrapper"><i class='bx bx-heart-circle'></i></div>
+        <h3>Daily Wellness Score</h3>
+        <p>Answer a few simple questions to calculate your daily lifestyle and wellness score.</p>
+        <a href="/wellness" class="explore-btn">Explore <i class='bx bx-right-arrow-alt'></i></a>
+      </div>
+      <div class="service-card lift-anim">
+        <div class="icon-wrapper"><i class='bx bx-bot'></i></div>
+        <h3>AI Health Assistant</h3>
+        <p>24/7 intelligent chatbot ready to answer your health-related queries.</p>
+        <a href="#" onclick="document.getElementById('chatbotToggle').click(); return false;" class="explore-btn">Explore <i class='bx bx-right-arrow-alt'></i></a>
+      </div>
+      <div class="service-card lift-anim">
+        <div class="icon-wrapper"><i class='bx bx-buildings'></i></div>
+        <h3>Nearby Hospitals</h3>
+        <p>Quickly locate top-rated hospitals and clinics in your area.</p>
+        <a href="/hospitals" class="explore-btn">Explore <i class='bx bx-right-arrow-alt'></i></a>
+      </div>
+      <div class="service-card lift-anim">
+        <div class="icon-wrapper"><i class='bx bx-capsule'></i></div>
+        <h3>Prescription Analyzer</h3>
+        <p>Understand your medications, side effects, and dosages easily.</p>
+        <a href="/prescription" class="explore-btn">Explore <i class='bx bx-right-arrow-alt'></i></a>
+      </div>
+      <div class="service-card lift-anim">
+        <div class="icon-wrapper"><i class='bx bx-news'></i></div>
+        <h3>Health Articles</h3>
+        <p>Stay informed with the latest medical research and health tips.</p>
+        <a href="/articles" class="explore-btn">Explore <i class='bx bx-right-arrow-alt'></i></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY CHOOSE MEDIBRIDGE -->
+  <section class="features-section fade-in">
+    <div class="section-header">
+      <h2>Why Choose MediBridge</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <i class='bx bx-brain'></i>
+        <h3>AI-powered Predictions</h3>
+        <p>State-of-the-art machine learning models ensuring high accuracy.</p>
+      </div>
+      <div class="feature-card">
+        <i class='bx bx-lock-alt'></i>
+        <h3>Secure & Private</h3>
+        <p>Your health data is encrypted and strictly confidential.</p>
+      </div>
+      <div class="feature-card">
+        <i class='bx bx-user-circle'></i>
+        <h3>Personalized Healthcare</h3>
+        <p>Tailored insights and recommendations for your unique profile.</p>
+      </div>
+      <div class="feature-card">
+        <i class='bx bx-tachometer'></i>
+        <h3>Fast & Accurate</h3>
+        <p>Get results in seconds to help you make informed decisions quickly.</p>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .diseases-grid-premium {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 24px;
+      margin-top: 40px;
+    }
+    .diseases-grid-premium > * {
+      grid-column: span 2;
+    }
+    .diseases-grid-premium > *:nth-child(4) {
+      grid-column: 2 / span 2;
+    }
+    .diseases-grid-premium > *:nth-child(5) {
+      grid-column: 4 / span 2;
+    }
+    @media (max-width: 992px) {
+      .diseases-grid-premium {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .diseases-grid-premium > *,
+      .diseases-grid-premium > *:nth-child(4),
+      .diseases-grid-premium > *:nth-child(5) {
+        grid-column: span 1;
+      }
+    }
+    @media (max-width: 600px) {
+      .diseases-grid-premium {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .premium-card {
+      position: relative;
+      background-color: var(--color-surface);
+      border-radius: 16px;
+      padding: 30px 24px 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+    
+    /* Top border colors */
+    .card-heart { border-top: 4px solid #ef4444; }
+    .card-diabetes { border-top: 4px solid #3b82f6; }
+    .card-asthma { border-top: 4px solid #10b981; }
+    .card-bp { border-top: 4px solid #f59e0b; }
+    .card-obesity { border-top: 4px solid #f97316; }
+    
+    /* Background pattern */
+    .premium-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: radial-gradient(circle at 10px 10px, rgba(20,184,166,0.03) 2px, transparent 0);
+      background-size: 20px 20px;
+      z-index: 0;
+      pointer-events: none;
+    }
+  
+    .premium-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 24px rgba(20, 184, 166, 0.15);
+      border-color: rgba(20, 184, 166, 0.3);
+    }
+    
+    /* AI Badge */
+    .ai-badge {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: linear-gradient(135deg, #0EA5E9, #14B8A6);
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      z-index: 1;
+      box-shadow: 0 2px 4px rgba(20,184,166,0.2);
+    }
+    
+    .premium-card .icon-wrapper {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 20px;
+      z-index: 1;
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+    .card-heart .icon-wrapper { background: #fee2e2; color: #ef4444; }
+    .card-diabetes .icon-wrapper { background: #dbeafe; color: #3b82f6; }
+    .card-asthma .icon-wrapper { background: #d1fae5; color: #10b981; }
+    .card-bp .icon-wrapper { background: #fef3c7; color: #f59e0b; }
+    .card-obesity .icon-wrapper { background: #ffedd5; color: #f97316; }
+    
+    .premium-card:hover .icon-wrapper {
+      transform: scale(1.1);
+    }
+  
+    .premium-card h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: 8px;
+      z-index: 1;
+      position: relative;
+    }
+    
+    .premium-card p {
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+      margin-bottom: 20px;
+      flex-grow: 1;
+      z-index: 1;
+      position: relative;
+    }
+    
+    .risk-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 24px;
+      z-index: 1;
+      position: relative;
+    }
+    .risk-badge {
+      background: var(--color-bg);
+      color: var(--color-text-muted);
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 500;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .premium-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 12px 20px;
+      background: var(--color-bg);
+      color: var(--color-primary);
+      border: 1px solid var(--color-primary-light);
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      z-index: 1;
+      position: relative;
+    }
+    .premium-btn i {
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+    }
+    .premium-card:hover .premium-btn {
+      background: var(--color-primary);
+      color: #ffffff;
+      border-color: var(--color-primary);
+    }
+    .premium-card:hover .premium-btn i {
+      transform: translateX(4px);
+    }
+  </style>
+
+  <!-- DISEASE CATEGORIES -->
+  <section class="diseases-section fade-in">
+    <div class="section-header">
+      <h2>Disease Categories</h2>
+      <p>Assess your risk for these major health conditions.</p>
+    </div>
+    
+    <div class="diseases-grid-premium">
+      <!-- Heart Disease -->
+      <div class="premium-card card-heart">
+        <div class="ai-badge"><i class='bx bx-brain'></i> AI Analysis</div>
+        <div class="icon-wrapper"><i class='bx bx-heart'></i></div>
+        <h3>Heart Disease</h3>
+        <p>Assess your likelihood of heart disease using AI-powered analysis.</p>
+        <div class="risk-badges">
+          <span class="risk-badge">Blood Pressure</span>
+          <span class="risk-badge">Cholesterol</span>
+          <span class="risk-badge">Age</span>
+        </div>
+        <a href="/assessment/heart" class="premium-btn">
+          Check My Risk <i class='bx bx-right-arrow-alt'></i>
+        </a>
+      </div>
+      
+      <!-- Diabetes -->
+      <div class="premium-card card-diabetes">
+        <div class="ai-badge"><i class='bx bx-brain'></i> AI Analysis</div>
+        <div class="icon-wrapper"><i class='bx bx-water'></i></div>
+        <h3>Diabetes</h3>
+        <p>Analyze your blood sugar indicators and lifestyle factors.</p>
+        <div class="risk-badges">
+          <span class="risk-badge">Glucose</span>
+          <span class="risk-badge">BMI</span>
+          <span class="risk-badge">Family History</span>
+        </div>
+        <a href="/assessment/diabetes" class="premium-btn">
+          Check My Risk <i class='bx bx-right-arrow-alt'></i>
+        </a>
+      </div>
+
+      <!-- Asthma -->
+      <div class="premium-card card-asthma">
+        <div class="ai-badge"><i class='bx bx-brain'></i> AI Analysis</div>
+        <div class="icon-wrapper"><i class='bx bx-wind'></i></div>
+        <h3>Asthma</h3>
+        <p>Check respiratory health metrics and breathing patterns.</p>
+        <div class="risk-badges">
+          <span class="risk-badge">Breathing</span>
+          <span class="risk-badge">Coughing</span>
+        </div>
+        <a href="/assessment/asthma" class="premium-btn">
+          Check My Risk <i class='bx bx-right-arrow-alt'></i>
+        </a>
+      </div>
+
+      <!-- Hypertension -->
+      <div class="premium-card card-bp">
+        <div class="ai-badge"><i class='bx bx-brain'></i> AI Analysis</div>
+        <div class="icon-wrapper"><i class='bx bx-pulse'></i></div>
+        <h3>Hypertension</h3>
+        <p>Evaluate blood pressure risks and cardiovascular strain.</p>
+        <div class="risk-badges">
+          <span class="risk-badge">Systolic</span>
+          <span class="risk-badge">Diastolic</span>
+          <span class="risk-badge">Lifestyle</span>
+        </div>
+        <a href="/assessment/hypertension" class="premium-btn">
+          Check My Risk <i class='bx bx-right-arrow-alt'></i>
+        </a>
+      </div>
+
+      <!-- Obesity -->
+      <div class="premium-card card-obesity">
+        <div class="ai-badge"><i class='bx bx-brain'></i> AI Analysis</div>
+        <div class="icon-wrapper"><i class='bx bx-run'></i></div>
+        <h3>Obesity</h3>
+        <p>Assess weight, BMI, and lifestyle for obesity risks.</p>
+        <div class="risk-badges">
+          <span class="risk-badge">BMI</span>
+          <span class="risk-badge">Diet</span>
+        </div>
+        <a href="/assessment/obesity" class="premium-btn">
+          Check My Risk <i class='bx bx-right-arrow-alt'></i>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-it-works fade-in">
+    <div class="section-header">
+      <h2>How It Works</h2>
+    </div>
+    <div class="timeline">
+      <div class="timeline-step">
+        <div class="step-number">1</div>
+        <h3>Enter Symptoms</h3>
+        <p>Provide details about how you are feeling.</p>
+      </div>
+      <div class="timeline-step">
+        <div class="step-number">2</div>
+        <h3>AI Analysis</h3>
+        <p>Our algorithms process your health data.</p>
+      </div>
+      <div class="timeline-step">
+        <div class="step-number">3</div>
+        <h3>Risk Assessment</h3>
+        <p>Receive comprehensive risk assessment results.</p>
+      </div>
+      <div class="timeline-step">
+        <div class="step-number">4</div>
+        <h3>Take Action</h3>
+        <p>Find nearby hospitals or learn about medicines.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HEALTH TIPS -->
+  <section class="health-tips fade-in">
+    <div class="tip-container">
+      <i class='bx bx-bulb'></i>
+      <div class="tip-content">
+        <h3>Health Tip of the Day</h3>
+        <p id="rotating-tip" style="transition: opacity 0.5s ease;">Drink at least 8 glasses of water a day to stay hydrated and energetic.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="testimonials-section fade-in">
+    <div class="section-header">
+      <h2>What Our Users Say</h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <p>"MediBridge helped me identify my symptoms early and seek proper medical attention. Truly a lifesaver!"</p>
+        <h4>- Jane Doe</h4>
+      </div>
+      <div class="testimonial-card">
+        <p>"The AI prediction is incredibly fast and the user interface is so easy to navigate. Highly recommended."</p>
+        <h4>- John Smith</h4>
+      </div>
+      <div class="testimonial-card">
+        <p>"I love the health articles and the symptom checker. It's like having a doctor in your pocket."</p>
+        <h4>- Sarah Williams</h4>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ SECTION -->
+  <section class="faq-section fade-in">
+    <div class="section-header">
+      <h2>Frequently Asked Questions</h2>
+    </div>
+    <div class="faq-container">
+      <div class="faq-item">
+        <button class="faq-question">Is MediBridge free to use? <i class='bx bx-chevron-down'></i></button>
+        <div class="faq-answer"><p>Yes, our core prediction and symptom checking services are completely free.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question">How accurate is the AI prediction? <i class='bx bx-chevron-down'></i></button>
+        <div class="faq-answer"><p>Our models are trained on extensive medical datasets and achieve high accuracy, but they should not replace professional medical advice.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question">Is my medical data secure? <i class='bx bx-chevron-down'></i></button>
+        <div class="faq-answer"><p>Absolutely. We use industry-standard encryption to ensure your personal health information is strictly private.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const words = ["Companion", "Assistant", "Advisor", "Guide", "Partner"];
+      let wordIndex = 0;
+      let charIndex = words[0].length;
+      let isDeleting = true;
+      
+      function typeEffect() {
+        const currentWord = words[wordIndex];
+        const typingSpan = document.getElementById("typing-word");
+        if(!typingSpan) return;
+        
+        if (isDeleting) {
+          typingSpan.innerText = currentWord.substring(0, charIndex - 1);
+          charIndex--;
+        } else {
+          typingSpan.innerText = currentWord.substring(0, charIndex + 1);
+          charIndex++;
+        }
+        
+        let timer = isDeleting ? 50 : 120;
+        
+        if (!isDeleting && charIndex === currentWord.length) {
+          timer = 2500; // Pause at end of word
+          isDeleting = true;
+        } else if (isDeleting && charIndex === 0) {
+          isDeleting = false;
+          wordIndex = (wordIndex + 1) % words.length;
+          timer = 400; // Pause before typing new word
+        }
+        
+        setTimeout(typeEffect, timer);
+      }
+      
+      // Start initial pause before first deletion
+      setTimeout(typeEffect, 2500);
+    });
+  </script>
+{% endblock %}

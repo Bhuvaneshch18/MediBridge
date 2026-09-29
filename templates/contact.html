@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block content %}
+
+  <div class="wizard-container" style="max-width: 1000px;">
+    <h1 class="wizard-title" style="text-align: center;">Get in Touch</h1>
+    <p class="wizard-subtitle" style="text-align: center;">Have a question or need support? We're here to help.</p>
+
+    <div class="form-card">
+      <div class="contact-grid">
+        
+        <!-- Left Side: Info -->
+        <div class="contact-info">
+          <div class="info-item">
+            <i class='bx bx-map info-icon'></i>
+            <div>
+              <div class="info-title">Address</div>
+              <div class="info-text">HealthPredict HQ<br>Duvvada</div>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <i class='bx bx-phone info-icon'></i>
+            <div>
+              <div class="info-title">Phone</div>
+              <div class="info-text">+91 8171615141<br>+91 9181716151</div>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <i class='bx bx-envelope info-icon'></i>
+            <div>
+              <div class="info-title">Email</div>
+              <div class="info-text">support@healthpredict.com<br>info@healthpredict.com</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side: Form -->
+        <div>
+          <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 5px;">Send us a message</h2>
+          <p style="font-size: 14px; color: var(--color-text-muted); margin-bottom: 20px;">If you have any queries, you can send a message from here.</p>
+          
+          <form action="/" class="contact-form">
+            <div>
+              <input type="text" class="form-input" placeholder="Enter your name" required>
+            </div>
+            <div>
+              <input type="email" class="form-input" placeholder="Enter your email" required>
+            </div>
+            <div>
+              <textarea class="form-input" placeholder="Enter your message" required></textarea>
+            </div>
+            <button type="submit" class="btn-next" style="width: 100%; justify-content: center;">Send Message</button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

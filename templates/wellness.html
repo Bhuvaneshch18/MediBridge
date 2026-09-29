@@ -1,0 +1,375 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .wellness-container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+    .question-card {
+        background: var(--color-surface);
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+    .question-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: var(--color-text);
+    }
+    .input-field, .select-field {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+    .btn-primary {
+        background: #0ea5e9;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        width: 100%;
+        transition: all 0.2s;
+    }
+    .btn-primary:hover {
+        background: #0284c7;
+    }
+    .result-section {
+        display: none;
+    }
+    .score-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: #f0f9ff;
+        border: 4px solid #0ea5e9;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+    .score-num {
+        font-size: 36px;
+        font-weight: 700;
+        color: #0ea5e9;
+    }
+    .score-text {
+        font-size: 14px;
+        color: #64748b;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 16px;
+        margin-bottom: 30px;
+    }
+    .status-excellent { background: #dcfce7; color: #166534; }
+    .status-good { background: #fef9c3; color: #854d0e; }
+    .status-fair { background: #ffedd5; color: #9a3412; }
+    .status-needs-improvement { background: #fee2e2; color: #991b1b; }
+    
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    .category-card {
+        background: var(--color-surface);
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+    }
+    .category-card.good { border-left: 4px solid #10b981; }
+    .category-card.needs { border-left: 4px solid #ef4444; }
+    
+    .list-section {
+        background: var(--color-surface);
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 20px;
+    }
+    .list-section h3 { margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+    .list-section ul { padding-left: 20px; }
+    .list-section li { margin-bottom: 10px; line-height: 1.5; color: var(--color-text-muted); }
+    
+    .gemini-summary {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        padding: 20px;
+        border-radius: 12px;
+        color: #166534;
+        margin-bottom: 30px;
+        font-size: 15px;
+        line-height: 1.6;
+    }
+    
+    #loading {
+        display: none;
+        text-align: center;
+        padding: 40px;
+    }
+    .spinner {
+        width: 40px; height: 40px;
+        border: 4px solid #e2e8f0;
+        border-top: 4px solid #0ea5e9;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+
+<div class="wellness-container">
+    <div id="form-section">
+        <h1 style="margin-bottom: 10px;">Daily Wellness Score</h1>
+        <p style="color: var(--color-text-muted); margin-bottom: 30px;">Answer a few questions about your daily habits to understand areas where you are doing well and where you may improve.</p>
+
+        <form id="wellness-form">
+            <div class="question-card">
+                <div class="question-title">1. Sleep</div>
+                <label>How many hours did you sleep last night?</label>
+                <input type="number" id="sleep" class="input-field" required min="0" max="24" step="0.5">
+            </div>
+
+            <div class="question-card">
+                <div class="question-title">2. Screen Time</div>
+                <label>What is your daily avg screen time (hrs)?</label>
+                <input type="number" id="screen_time" class="input-field" required min="0" max="24" step="0.5" placeholder="Hours">
+            </div>
+
+            <div class="question-card">
+                <div class="question-title">3. Hydration</div>
+                <label>Approximately how much water did you drink today? (Litres)</label>
+                <input type="number" id="hydration" class="input-field" required min="0" max="10" step="0.1">
+            </div>
+
+            <div class="question-card">
+                <div class="question-title">4. Meals</div>
+                <label>How many meals do you usually have in a day?</label>
+                <select id="meals" class="select-field" required>
+                    <option value="" disabled selected>Select an option</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5 or more">5 or more</option>
+                </select>
+            </div>
+
+            <div class="question-card">
+                <div class="question-title">5. Nutrition</div>
+                <label>Did you include fruits and/or vegetables in your meals today?</label>
+                <select id="nutrition" class="select-field" required>
+                    <option value="" disabled selected>Select an option</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+
+            <div class="question-card">
+                <div class="question-title">6. Physical Activity</div>
+                <label>How many minutes of physical activity did you do today?</label>
+                <input type="number" id="activity" class="input-field" required min="0" max="600">
+            </div>
+
+            <div class="question-card">
+                <div class="question-title">7. Screen Time Before Sleep</div>
+                <label>How many minutes did you avoid looking at screens before bed last night?</label>
+                <select id="pre_sleep_screens" class="select-field" required>
+                    <option value="" disabled selected>Select an option</option>
+                    <option value="I don't avoid screens">I don't avoid screens</option>
+                    <option value="Less than 15 minutes">Less than 15 minutes</option>
+                    <option value="15–30 minutes">15–30 minutes</option>
+                    <option value="30–60 minutes">30–60 minutes</option>
+                    <option value="More than 1 hour">More than 1 hour</option>
+                </select>
+            </div>
+
+            <div class="question-card">
+                <div class="question-title">8. Smoking</div>
+                <label>How often do you smoke?</label>
+                <select id="smoking" class="select-field" required>
+                    <option value="" disabled selected>Select an option</option>
+                    <option value="Never">Never</option>
+                    <option value="Occasionally">Occasionally</option>
+                    <option value="1–3 days a week">1–3 days a week</option>
+                    <option value="4–6 days a week">4–6 days a week</option>
+                    <option value="Daily">Daily</option>
+                </select>
+            </div>
+
+            <div class="question-card">
+                <div class="question-title">9. Alcohol</div>
+                <label>How often do you drink alcohol?</label>
+                <select id="alcohol" class="select-field" required>
+                    <option value="" disabled selected>Select an option</option>
+                    <option value="Never">Never</option>
+                    <option value="Occasionally">Occasionally</option>
+                    <option value="1–2 times a week">1–2 times a week</option>
+                    <option value="3–6 times a week">3–6 times a week</option>
+                    <option value="Daily">Daily</option>
+                </select>
+            </div>
+
+            <div class="question-card">
+                <div class="question-title">10. Stress</div>
+                <label>How would you describe your stress level today?</label>
+                <select id="stress" class="select-field" required>
+                    <option value="" disabled selected>Select an option</option>
+                    <option value="Low">Low</option>
+                    <option value="Moderate">Moderate</option>
+                    <option value="High">High</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-primary">Calculate My Wellness Score</button>
+        </form>
+    </div>
+
+    <div id="loading">
+        <div class="spinner"></div>
+        <p>Calculating your wellness score...</p>
+    </div>
+
+    <div id="result-section" class="result-section">
+        <h1 style="text-align: center; margin-bottom: 20px;">Your Daily Wellness Score</h1>
+        
+        <div class="score-circle">
+            <div class="score-num" id="res-score">82</div>
+            <div class="score-text">/ 100</div>
+        </div>
+        
+        <div style="text-align: center;">
+            <div class="status-badge" id="res-status-badge">Good</div>
+        </div>
+        
+        <div class="gemini-summary" id="res-summary" style="display:none;"></div>
+        
+        <h2 style="margin-bottom: 15px;">Category Breakdown</h2>
+        <div class="category-grid" id="res-categories">
+            <!-- Categories injected here -->
+        </div>
+        
+        <div class="list-section" id="section-strengths" style="display:none;">
+            <h3><i class='bx bx-check-circle' style="color:#10b981; font-size:24px;"></i> You're Doing Well</h3>
+            <ul id="list-strengths"></ul>
+        </div>
+        
+        <div class="list-section" id="section-improvements" style="display:none;">
+            <h3><i class='bx bx-target-lock' style="color:#ef4444; font-size:24px;"></i> Areas to Improve</h3>
+            <ul id="list-improvements"></ul>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 15px; background: #fffbeb; border: 1px solid #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px; color: #92400e; font-size: 13px; line-height: 1.5;">
+            <strong>Medical Disclaimer:</strong> This wellness score is based on the information you provided and is intended for general wellness guidance. It is not a medical assessment or diagnosis.
+        </div>
+        
+        <button type="button" class="btn-primary" style="margin-top:20px;" onclick="location.reload()">Start Over</button>
+    </div>
+</div>
+
+<script>
+document.getElementById('wellness-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    document.getElementById('form-section').style.display = 'none';
+    document.getElementById('loading').style.display = 'block';
+    
+    const data = {
+        sleep: document.getElementById('sleep').value,
+        pre_sleep_screens: document.getElementById('pre_sleep_screens').value,
+        hydration: document.getElementById('hydration').value,
+        meals: document.getElementById('meals').value,
+        nutrition: document.getElementById('nutrition').value,
+        activity: document.getElementById('activity').value,
+        screen_time: document.getElementById('screen_time').value,
+        smoking: document.getElementById('smoking').value,
+        alcohol: document.getElementById('alcohol').value,
+        stress: document.getElementById('stress').value
+    };
+    
+    try {
+        const res = await fetch('/wellness_api', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        
+        const result = await res.json();
+        
+        document.getElementById('loading').style.display = 'none';
+        
+        if(result.error) {
+            alert(result.error);
+            document.getElementById('form-section').style.display = 'block';
+            return;
+        }
+        
+        document.getElementById('result-section').style.display = 'block';
+        document.getElementById('res-score').innerText = result.score;
+        
+        const badge = document.getElementById('res-status-badge');
+        badge.innerText = result.status;
+        badge.className = 'status-badge';
+        if(result.status === 'Excellent') badge.classList.add('status-excellent');
+        else if(result.status === 'Good') badge.classList.add('status-good');
+        else if(result.status === 'Fair') badge.classList.add('status-fair');
+        else badge.classList.add('status-needs-improvement');
+        
+        if(result.summary) {
+            document.getElementById('res-summary').style.display = 'block';
+            document.getElementById('res-summary').innerText = result.summary;
+        }
+        
+        let catHtml = '';
+        result.categories.forEach(cat => {
+            const cssClass = cat.status === 'Good' ? 'good' : 'needs';
+            catHtml += `
+                <div class="category-card ${cssClass}">
+                    <div style="font-weight:600; margin-bottom:5px; color:var(--color-text);">${cat.name}</div>
+                    <div style="color:var(--color-text-muted); font-size:14px; margin-bottom:8px;">${cat.score}</div>
+                    <div style="font-size:13px; font-weight:500; color: ${cat.status === 'Good' ? '#10b981' : '#ef4444'}">${cat.status}</div>
+                </div>
+            `;
+        });
+        document.getElementById('res-categories').innerHTML = catHtml;
+        
+        if(result.strengths && result.strengths.length > 0) {
+            document.getElementById('section-strengths').style.display = 'block';
+            document.getElementById('list-strengths').innerHTML = result.strengths.map(s => `<li>Good ${s.toLowerCase()} management</li>`).join('');
+        }
+        
+        if(result.improvements && result.improvements.length > 0) {
+            document.getElementById('section-improvements').style.display = 'block';
+            let impHtml = '';
+            result.improvements.forEach(imp => {
+                const catObj = result.categories.find(c => c.name === imp.name);
+                if(catObj) {
+                    impHtml += `<li><strong>${imp.name}:</strong> ${catObj.suggestion}</li>`;
+                }
+            });
+            document.getElementById('list-improvements').innerHTML = impHtml;
+        }
+        
+    } catch(err) {
+        alert("An error occurred while calculating the score.");
+        console.error(err);
+        location.reload();
+    }
+});
+</script>
+{% endblock %}

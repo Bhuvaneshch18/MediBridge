@@ -1,0 +1,478 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+  /* Article Page Specific Styles */
+  .articles-hero {
+    background: linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(14, 165, 233, 0.1));
+    padding: 60px 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .articles-hero h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 16px;
+  }
+  .articles-hero p {
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    max-width: 650px;
+    margin: 0 auto 30px;
+  }
+  .search-wrapper {
+    max-width: 600px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .search-wrapper input {
+    width: 100%;
+    padding: 16px 24px;
+    padding-right: 50px;
+    font-size: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 30px;
+    box-shadow: var(--shadow-sm);
+    outline: none;
+    transition: var(--transition);
+  }
+  .search-wrapper input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px var(--color-primary-light);
+  }
+  .search-wrapper i {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.5rem;
+    color: var(--color-primary);
+  }
+
+  .category-filters {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 20px 0;
+    margin-bottom: 30px;
+    scrollbar-width: none;
+  }
+  .category-filters::-webkit-scrollbar {
+    display: none;
+  }
+  .category-chip {
+    padding: 8px 16px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: var(--transition);
+  }
+  .category-chip:hover, .category-chip.active {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+  }
+
+  .articles-layout {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 40px;
+    margin-bottom: 60px;
+  }
+  @media (max-width: 992px) {
+    .articles-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Featured Article */
+  .featured-article {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 40px;
+    transition: var(--transition);
+    border: 1px solid var(--color-border);
+  }
+  .featured-article:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+  }
+  .featured-img {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+  }
+  .featured-content {
+    padding: 30px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .featured-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--color-text);
+  }
+  .featured-desc {
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  /* Article Cards Grid */
+  .latest-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+  }
+  .article-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+  }
+  .article-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+  }
+  .article-img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
+  .article-body {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .article-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .read-time {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .article-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--color-text);
+    line-height: 1.4;
+  }
+  .article-desc {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    margin-bottom: 20px;
+    flex-grow: 1;
+  }
+  .read-more {
+    color: var(--color-primary);
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: var(--transition);
+  }
+  .read-more:hover {
+    color: var(--color-primary-hover);
+    gap: 8px;
+  }
+
+  /* Sidebar Styles */
+  .sidebar-section {
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    margin-bottom: 30px;
+  }
+  .sidebar-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--color-primary-light);
+  }
+  .trending-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .trending-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .trending-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  .trending-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+  .trending-content h4 {
+    font-size: 0.95rem;
+    margin: 0 0 5px;
+    line-height: 1.3;
+  }
+  .trending-content h4 a {
+    color: var(--color-text);
+    text-decoration: none;
+    transition: var(--transition);
+  }
+  .trending-content h4 a:hover {
+    color: var(--color-primary);
+  }
+  
+  .health-tip-banner {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: #fff;
+    padding: 24px;
+    border-radius: var(--radius-md);
+    text-align: center;
+  }
+  .health-tip-banner i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+  }
+  .health-tip-banner h4 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+  .health-tip-banner p {
+    font-size: 0.95rem;
+    opacity: 0.9;
+  }
+
+  /* Newsletter Section */
+  .newsletter-section {
+    background: var(--color-surface);
+    padding: 60px 20px;
+    text-align: center;
+    border-radius: var(--radius-lg);
+    margin-top: 40px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+  }
+  .newsletter-section h2 {
+    font-size: 2rem;
+    color: var(--color-text);
+    margin-bottom: 16px;
+  }
+  .newsletter-section p {
+    color: var(--color-text-muted);
+    margin-bottom: 30px;
+  }
+  .newsletter-form {
+    display: flex;
+    max-width: 500px;
+    margin: 0 auto;
+    gap: 10px;
+  }
+  .newsletter-form input {
+    flex-grow: 1;
+    padding: 14px 20px;
+    border: 1px solid var(--color-border);
+    border-radius: 30px;
+    font-size: 1rem;
+    outline: none;
+  }
+  .newsletter-form input:focus {
+    border-color: var(--color-primary);
+  }
+  .newsletter-form button {
+    padding: 14px 30px;
+    background: var(--color-primary);
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .newsletter-form button:hover {
+    background: var(--color-primary-hover);
+  }
+  @media (max-width: 600px) {
+    .newsletter-form {
+      flex-direction: column;
+    }
+  }
+</style>
+
+<!-- Hero Section -->
+<section class="articles-hero fade-in">
+  <h1>Health Articles & Wellness Guide</h1>
+  <p>Learn about diseases, prevention, healthy living, and medical awareness through expert-curated articles.</p>
+  
+  <div class="search-wrapper">
+    <input type="text" placeholder="Search for articles, diseases, or health tips...">
+    <i class='bx bx-search'></i>
+  </div>
+</section>
+
+<div class="container page-wrapper">
+  
+  <!-- Category Filters -->
+  <div class="category-filters fade-in">
+    <div class="category-chip active">All</div>
+    <div class="category-chip">Heart Health</div>
+    <div class="category-chip">Diabetes</div>
+    <div class="category-chip">Kidney Health</div>
+    <div class="category-chip">Liver Health</div>
+    <div class="category-chip">Blood Pressure</div>
+    <div class="category-chip">Nutrition</div>
+    <div class="category-chip">Mental Health</div>
+    <div class="category-chip">Women's Health</div>
+    <div class="category-chip">Child Care</div>
+    <div class="category-chip">Fitness</div>
+    <div class="category-chip">General Health</div>
+  </div>
+
+  <div class="articles-layout fade-in">
+    <!-- Main Content Column -->
+    <main class="main-content">
+      
+      <!-- Featured Article -->
+      {% if articles and articles|length > 0 %}
+      <article class="featured-article">
+        <img src="{{ articles[0].image }}" alt="Featured Article" class="featured-img">
+        <div class="featured-content">
+          <span class="badge">{{ articles[0].category }}</span>
+          <h2 class="featured-title">{{ articles[0].title }}</h2>
+          <p class="featured-desc">{{ articles[0].description[:250] + '...' if articles[0].description|length > 250 else articles[0].description }}</p>
+          <a href="{{ articles[0].link }}" target="_blank" rel="noopener noreferrer" class="read-more">Read Full Article <i class='bx bx-right-arrow-alt'></i></a>
+        </div>
+      </article>
+      {% endif %}
+
+      <!-- Latest Articles Grid -->
+      <h3 style="margin-bottom: 24px; font-size: 1.5rem; color: var(--color-text);">Latest Articles</h3>
+      <div class="latest-grid">
+        {% if articles and articles|length > 1 %}
+          {% for article in articles[1:] %}
+          <div class="article-card">
+            <img src="{{ article.image }}" alt="{{ article.category }}" class="article-img">
+            <div class="article-body">
+              <div class="article-meta">
+                <span class="badge">{{ article.category }}</span>
+                <span class="read-time"><i class='bx bx-calendar'></i> {{ article.date }}</span>
+              </div>
+              <h4 class="article-title">{{ article.title[:80] + '...' if article.title|length > 80 else article.title }}</h4>
+              <p class="article-desc">{{ article.description[:120] + '...' if article.description|length > 120 else article.description }}</p>
+              <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer" class="read-more">Read Article <i class='bx bx-right-arrow-alt'></i></a>
+            </div>
+          </div>
+          {% endfor %}
+        {% elif not articles %}
+          <div style="grid-column: 1 / -1; text-align: center; padding: 50px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md);">
+            <i class='bx bx-news' style="font-size: 3rem; color: var(--color-text-muted); margin-bottom: 15px;"></i>
+            <h4 style="color: var(--color-text); margin-bottom: 10px;">Articles are temporarily unavailable.</h4>
+            <p style="color: var(--color-text-muted);">Please try again later.</p>
+          </div>
+        {% endif %}
+      </div>
+    </main>
+
+    <!-- Sidebar Column -->
+    <aside class="sidebar">
+      
+      <!-- Popular Articles -->
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Trending Now</h3>
+        <ul class="trending-list">
+          <li class="trending-item">
+            <img src="https://placehold.co/100x100/14B8A6/FFFFFF?text=Diet" alt="Diet" class="trending-img">
+            <div class="trending-content">
+              <h4><a href="/article/diabetes">10 Superfoods for Blood Sugar Control</a></h4>
+              <span class="read-time"><i class='bx bx-time'></i> 3 min read</span>
+            </div>
+          </li>
+          <li class="trending-item">
+            <img src="https://placehold.co/100x100/0EA5E9/FFFFFF?text=Sleep" alt="Sleep" class="trending-img">
+            <div class="trending-content">
+              <h4><a href="#">How Sleep Deprivation Impacts Heart Health</a></h4>
+              <span class="read-time"><i class='bx bx-time'></i> 5 min read</span>
+            </div>
+          </li>
+          <li class="trending-item">
+            <img src="https://placehold.co/100x100/22C55E/FFFFFF?text=Stress" alt="Stress" class="trending-img">
+            <div class="trending-content">
+              <h4><a href="#">Stress Management: A Medical Perspective</a></h4>
+              <span class="read-time"><i class='bx bx-time'></i> 6 min read</span>
+            </div>
+          </li>
+          <li class="trending-item">
+            <img src="https://placehold.co/100x100/F59E0B/FFFFFF?text=Water" alt="Water" class="trending-img">
+            <div class="trending-content">
+              <h4><a href="/article/kidney_disease">Hydration and Kidney Function Linked</a></h4>
+              <span class="read-time"><i class='bx bx-time'></i> 4 min read</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Health Tips Banner -->
+      <div class="health-tip-banner">
+        <i class='bx bx-bulb'></i>
+        <h4>Daily Health Tip</h4>
+        <p>"Aim for at least 30 minutes of moderate physical activity every day. It strengthens the heart, improves lung capacity, and boosts your mood!"</p>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- Newsletter Section -->
+  <section class="newsletter-section fade-in">
+    <h2>Stay Updated on Health</h2>
+    <p>Subscribe to our newsletter to receive weekly health tips, medical news, and exclusive wellness guides directly to your inbox.</p>
+    <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Subscribed successfully!');">
+      <input type="email" placeholder="Enter your email address" required>
+      <button type="submit">Subscribe</button>
+    </form>
+  </section>
+
+</div>
+
+{% endblock %}

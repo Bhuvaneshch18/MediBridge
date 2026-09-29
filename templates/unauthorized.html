@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container" style="display: flex; justify-content: center; align-items: center; min-height: 70vh;">
+  <div class="card" style="width: 100%; max-width: 450px; text-align: center;">
+    
+    <div class="card-header">
+      <div style="font-size: 48px; margin-bottom: 16px;">🔒</div>
+      <h2>Login Required</h2>
+      <p style="color: var(--text-secondary); margin-top: 8px;">
+        You need to sign in to access this healthcare feature.
+      </p>
+    </div>
+
+    <div class="card-body">
+      <p style="margin-bottom: 24px;">Please login or create an account to continue.</p>
+      
+      <!-- Redirect to login form -->
+      <a href="{{ url_for('auth.login', next=next) }}" class="btn btn-primary btn-block" style="margin-bottom: 12px; text-decoration: none; display: block; text-align: center;">Sign In</a>
+      <a href="{{ url_for('auth.register') }}" class="btn btn-secondary btn-block" style="text-decoration: none; display: block; text-align: center;">Register</a>
+    </div>
+    
+  </div>
+</div>
+{% endblock %}

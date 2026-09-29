@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container" style="display: flex; justify-content: center; align-items: center; min-height: 70vh; margin-top: 40px; margin-bottom: 40px;">
+  <div class="card" style="width: 100%; max-width: 450px;">
+    
+    <div class="card-header text-center" style="padding: 30px 20px 10px;">
+      <img src="{{ url_for('static', filename='medibridge_logo.svg') }}" alt="MediBridge Logo" style="height: 64px; width: 64px; border-radius: 16px; object-fit: contain; margin-bottom: 16px;">
+      <h2>Welcome Back</h2>
+      <p>Log in to access your dashboard.</p>
+    </div>
+
+    <div class="card-body" style="padding: 20px 30px 30px;">
+      
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            {% if category == 'success' %}
+              <div class="alert alert-success" style="margin-bottom: 20px; padding: 10px; border-radius: 5px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;">
+                {{ message }}
+              </div>
+            {% else %}
+              <div class="alert alert-danger" style="margin-bottom: 20px; padding: 10px; border-radius: 5px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;">
+                {{ message }}
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <!-- Google OAuth Sign In Button -->
+      <div style="margin-bottom: 20px;">
+        <a href="{{ url_for('auth.google_login') }}" class="btn-google" style="display: flex; align-items: center; justify-content: center; width: 100%; padding: 11px 16px; border: 1px solid #dadce0; border-radius: 8px; background-color: #ffffff; color: #3c4043; font-weight: 600; font-size: 0.95rem; text-decoration: none; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: background-color 0.2s, box-shadow 0.2s;">
+          <svg style="width: 20px; height: 20px; margin-right: 12px;" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          Continue as Guest
+        </a>
+      </div>
+
+      <!-- Divider -->
+      <div style="display: flex; align-items: center; text-align: center; margin-bottom: 20px; color: #888;">
+        <div style="flex-grow: 1; border-bottom: 1px solid #e0e0e0;"></div>
+        <span style="padding: 0 12px; font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">OR</span>
+        <div style="flex-grow: 1; border-bottom: 1px solid #e0e0e0;"></div>
+      </div>
+
+      <form action="{{ url_for('auth.login') }}" method="POST" autocomplete="off">
+        {{ form.hidden_tag() }}
+        
+        <!-- Hidden inputs to trick browser autofill -->
+        <input style="display:none" type="text" name="fakeusernameremembered"/>
+        <input style="display:none" type="password" name="fakepasswordremembered"/>
+        
+        <div class="form-group" style="margin-bottom: 15px;">
+          {{ form.email.label(class="form-label") }}
+          {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="Enter your email address", autocomplete="new-password") }}
+          {% if form.email.errors %}
+            <div class="invalid-feedback" style="color: #dc3545; font-size: 0.875em; margin-top: 5px;">
+              {% for error in form.email.errors %}
+                {{ error }}
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="form-group" style="margin-bottom: 15px;">
+          {{ form.password.label(class="form-label") }}
+          <div style="position: relative;">
+            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Enter your password", id="login-password", autocomplete="new-password") }}
+            <span class="eye-icon" onclick="togglePasswordVisibility('login-password')" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6c757d; z-index: 10;">
+              <i class="bx bx-show"></i>
+            </span>
+          </div>
+          {% if form.password.errors %}
+            <div class="invalid-feedback" style="color: #dc3545; font-size: 0.875em; margin-top: 5px;">
+              {% for error in form.password.errors %}
+                {{ error }}<br>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+          <div class="custom-control custom-checkbox">
+            {{ form.remember_me(class="custom-control-input", id="remember_me") }}
+            {{ form.remember_me.label(class="custom-control-label", for="remember_me") }}
+          </div>
+          <a href="{{ url_for('auth.forgot_password_request') }}" style="font-size: 0.9rem; color: var(--color-primary); font-weight: 600; text-decoration: none;">Forgot Password?</a>
+        </div>
+
+        {{ form.submit(class="btn btn-primary", style="width: 100%; padding: 10px; font-weight: bold;") }}
+      </form>
+      
+      <div class="text-center" style="margin-top: 20px;">
+        <p>Don't have an account? <a href="{{ url_for('auth.register') }}">Register here</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Hide native browser password reveal icon */
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear,
+  input[type="password"]::-webkit-reveal {
+      display: none !important;
+  }
+</style>
+<script>
+  function togglePasswordVisibility(fieldId) {
+    var inputElement = document.getElementById(fieldId);
+    if (!inputElement) return;
+    
+    var eyeIcon = inputElement.parentNode.querySelector(".eye-icon i");
+    if (inputElement.type === "password") {
+      inputElement.type = "text";
+      if(eyeIcon) {
+        eyeIcon.className = "bx bx-hide";
+      }
+    } else {
+      inputElement.type = "password";
+      if(eyeIcon) {
+        eyeIcon.className = "bx bx-show";
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var passwordInput = document.getElementById('login-password');
+    var eyeIconContainer = document.querySelector('.eye-icon');
+    
+    if(passwordInput && eyeIconContainer) {
+      // Initially hide the eye icon
+      eyeIconContainer.style.display = 'none';
+      
+      // Show eye icon only when user starts typing
+      passwordInput.addEventListener('input', function() {
+        if (this.value.length > 0) {
+          eyeIconContainer.style.display = 'inline-block';
+        } else {
+          eyeIconContainer.style.display = 'none';
+        }
+      });
+    }
+  });
+</script>
+<script>
+  // Strictly prevent browser autofill by wiping the values immediately after the browser attempts to fill them
+  window.addEventListener('DOMContentLoaded', (event) => {
+      setTimeout(() => {
+          let emailField = document.getElementById('email');
+          let passField = document.getElementById('login-password');
+          if (emailField) emailField.value = '';
+          if (passField) passField.value = '';
+      }, 50); // Small delay to catch Chrome's delayed autofill
+      
+      setTimeout(() => {
+          let emailField = document.getElementById('email');
+          let passField = document.getElementById('login-password');
+          if (emailField) emailField.value = '';
+          if (passField) passField.value = '';
+      }, 500); // Secondary catch for slower autofills
+  });
+</script>
+{% endblock %}

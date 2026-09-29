@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+  .disease-card {
+    text-align: center;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+  }
+  .disease-card form {
+    margin-top: auto;
+  }
+  .disease-card .card-icon {
+    width: 64px;
+    height: 64px;
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 20px;
+    transition: var(--transition);
+  }
+  .disease-card:hover .card-icon {
+    background-color: var(--color-primary);
+    color: #fff;
+    transform: rotate(10deg) scale(1.1);
+  }
+  .disease-card .card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--color-text);
+  }
+  .disease-card .card-desc {
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    margin-bottom: 24px;
+    min-height: 44px;
+  }
+</style>
+
+<div class="container page-wrapper">
+  <div class="text-center mb-4">
+    <h1 style="font-size: 2.5rem; font-weight: 700; color: var(--color-text); margin-bottom: 16px;">Predictive Disease Risk Assessment</h1>
+    <p style="font-size: 1.1rem; color: var(--color-text-muted); max-width: 600px; margin: 0 auto;">Select a health condition to run an AI-powered prediction based on your vitals.</p>
+  </div>
+  
+  <div class="grid-5-centered" style="margin-top: 40px;">
+      
+      <div class="card disease-card card-body">
+          <div class="card-icon"><i class='bx bx-heart'></i></div>
+          <h3 class="card-title">Heart Disease</h3>
+          <p class="card-desc">Predict the likelihood of heart disease based on various health factors.</p>
+          <form action="/assessment/heart" style="width: 100%;">
+              <button class="btn btn-primary btn-block">Check My Risk</button>
+          </form>
+      </div>
+      
+      <div class="card disease-card card-body">
+          <div class="card-icon"><i class='bx bx-water'></i></div>
+          <h3 class="card-title">Diabetes</h3>
+          <p class="card-desc">Predict the likelihood of having diabetes based on your vitals and health history.</p>
+          <form action="/assessment/diabetes" style="width: 100%;">
+              <button class="btn btn-primary btn-block">Check My Risk</button>
+          </form>
+      </div>
+
+      <div class="card disease-card card-body">
+          <div class="card-icon"><i class='bx bx-wind'></i></div>
+          <h3 class="card-title">Asthma</h3>
+          <p class="card-desc">Evaluate the probability of asthma based on health factors.</p>
+          <form action="/assessment/asthma" style="width: 100%;">
+              <button class="btn btn-primary btn-block">Check My Risk</button>
+          </form>
+      </div>
+
+      <div class="card disease-card card-body">
+          <div class="card-icon"><i class='bx bx-pulse'></i></div>
+          <h3 class="card-title">Hypertension</h3>
+          <p class="card-desc">Evaluate high blood pressure risk factors.</p>
+          <form action="/assessment/hypertension" style="width: 100%;">
+              <button class="btn btn-primary btn-block">Check My Risk</button>
+          </form>
+      </div>
+      
+      <div class="card disease-card card-body">
+          <div class="card-icon"><i class='bx bx-run'></i></div>
+          <h3 class="card-title">Obesity</h3>
+          <p class="card-desc">Assess weight, BMI, and lifestyle for obesity risks.</p>
+          <form action="/assessment/obesity" style="width: 100%;">
+              <button class="btn btn-primary btn-block">Check My Risk</button>
+          </form>
+      </div>
+  </div>
+</div>
+{% endblock %}

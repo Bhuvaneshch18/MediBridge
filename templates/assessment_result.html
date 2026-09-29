@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+  .result-container {
+    max-width: 800px;
+    margin: 60px auto;
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 60px 40px;
+    border: 1px solid var(--color-border);
+  }
+  
+  .result-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  
+  .result-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 10px;
+  }
+  
+  .risk-badge {
+    display: inline-block;
+    padding: 8px 24px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin: 20px 0;
+    color: #fff;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  
+  /* Dynamic Risk Colors */
+  .risk-Low { background-color: #10b981; }
+  .risk-Moderate, .risk-Medium { background-color: #f59e0b; }
+  .risk-High { background-color: #ef4444; }
+  .risk-Unknown { background-color: #64748b; }
+  
+  .probability-text {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-text);
+    margin-bottom: 10px;
+  }
+  
+  .analysis-card {
+    background: var(--color-bg);
+    padding: 24px;
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--color-primary);
+    margin-bottom: 30px;
+  }
+  
+  .analysis-card h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .analysis-card p {
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    margin: 0;
+  }
+  
+  .recommendations-card {
+    background: var(--color-surface);
+    padding: 24px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    margin-bottom: 40px;
+  }
+  
+  .recommendations-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+  
+  @media (max-width: 768px) {
+    .recommendations-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .analysis-card {
+    background: var(--color-bg);
+    padding: 24px;
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--color-primary);
+    margin-bottom: 20px;
+  }
+  
+  .analysis-card h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1rem;
+  }
+
+  .analysis-card p {
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Different border colors for varied cards */
+  .border-diet { border-left-color: #10b981; }
+  .border-exercise { border-left-color: #3b82f6; }
+  .border-hydration { border-left-color: #06b6d4; }
+  .border-lifestyle { border-left-color: #8b5cf6; }
+  .border-tips { border-left-color: #f59e0b; }
+  
+  .disclaimer-box {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+    padding: 20px;
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    margin-bottom: 40px;
+    text-align: left;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  .disclaimer-icon {
+    font-size: 24px;
+    color: #f59e0b;
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+</style>
+
+<div class="container fade-in">
+  <div class="result-container">
+    
+    <div class="result-header">
+      <h1 class="result-title">{{ title }} Assessment Results</h1>
+      
+      <div class="risk-badge risk-{{ data.riskLevel }}">
+        Risk Level: {{ data.riskLevel|upper }}
+      </div>
+      
+      <div class="probability-text">
+        Estimated Probability: {{ data.probability }}%
+      </div>
+    </div>
+
+    {% set model_name_str = 'KNN (K-Nearest Neighbors)' %}
+    {% if 'Heart' in title or 'Diabetes' in title %}
+      {% set model_name_str = 'KNN (K-Nearest Neighbors)' %}
+    {% elif 'Asthma' in title %}
+      {% set model_name_str = 'Random Forest' %}
+    {% elif 'Hypertension' in title %}
+      {% set model_name_str = 'Decision Tree' %}
+    {% elif 'Obesity' in title %}
+      {% set model_name_str = 'Multi-Class Classifier' %}
+    {% endif %}
+
+    <div class="analysis-card">
+      <h3><i class='bx bx-brain'></i> Model Analysis</h3>
+      
+      {% set score = data.probability|int %}
+      {% if score < 33 %}
+          {% set severity = "low" %}
+      {% elif score < 66 %}
+          {% set severity = "medium" %}
+      {% else %}
+          {% set severity = "high" %}
+      {% endif %}
+      
+      <p style="color: var(--color-text-muted); line-height: 1.6; margin: 0; margin-bottom: 12px; font-weight: 600;">
+        You have a {{ severity }} chance of getting {{ title|lower }}. Risk Level: {{ data.riskLevel }}.
+      </p>
+
+      {% if 'machine learning' in data.analysis %}
+        <p>{{ data.analysis | replace('machine learning', model_name_str) }}</p>
+      {% else %}
+        <p>{{ data.analysis }}</p>
+      {% endif %}
+    </div>
+
+    <div class="recommendations-grid">
+      <div class="analysis-card border-lifestyle">
+        <h3><i class='bx bx-compass'></i> Lifestyle Suggestions</h3>
+        <p>{{ data.recommendations.lifestyle_suggestions }}</p>
+      </div>
+      
+      <div class="analysis-card border-diet">
+        <h3><i class='bx bx-restaurant'></i> Diet Recommendations</h3>
+        <p>{{ data.recommendations.diet_recommendations }}</p>
+      </div>
+      
+      <div class="analysis-card border-exercise">
+        <h3><i class='bx bx-run'></i> Exercise Recommendations</h3>
+        <p>{{ data.recommendations.exercise_recommendations }}</p>
+      </div>
+      
+      <div class="analysis-card border-hydration">
+        <h3><i class='bx bx-water'></i> Hydration Advice</h3>
+        <p>{{ data.recommendations.hydration_advice }}</p>
+      </div>
+    </div>
+
+    <div class="analysis-card border-tips">
+      <h3><i class='bx bx-bulb'></i> Healthy Weight Tips</h3>
+      <p>{{ data.recommendations.healthy_weight_tips }}</p>
+    </div>
+
+    <div class="disclaimer-box">
+      <i class='bx bx-error-circle disclaimer-icon'></i>
+      <div>
+        <strong>Important Medical Disclaimer</strong><br>
+        This platform performs early health risk assessment based on the data you provided. It is powered by <b>machine learning prediction models</b> and is <b>not a substitute for professional medical diagnosis</b>. Always consult with a qualified healthcare provider for an accurate medical diagnosis and personalized treatment plan.
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <a href="/" class="btn btn-secondary">Return to Dashboard</a>
+      <a href="/hospitals?disease={{ title }}" class="btn btn-primary">Find Nearby Hospitals</a>
+      <a href="/articles" class="btn btn-outline">Read Health Articles</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

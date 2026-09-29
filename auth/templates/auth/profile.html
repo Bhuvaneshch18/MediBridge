@@ -1,0 +1,613 @@
+{% extends 'base.html' %}
+{% from 'components/avatar.html' import render_avatar %}
+
+{% block content %}
+<style>
+  .dashboard-wrapper {
+    max-width: 1300px;
+    margin: 40px auto 80px;
+    padding: 0 20px;
+    animation: fadeIn 0.6s ease-out;
+  }
+  .dashboard-header-top {
+    margin-bottom: 30px;
+  }
+  .dashboard-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .dashboard-subtitle {
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 25px;
+  }
+
+  @media (max-width: 992px) {
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  [data-theme='light'] .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+  }
+  
+  .card-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 10px;
+  }
+  [data-theme='light'] .card-title {
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+  }
+  
+  .stat-card {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  [data-theme='light'] .stat-card {
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+  .stat-icon {
+    font-size: 24px;
+    color: var(--color-primary);
+    margin-bottom: 10px;
+  }
+  .stat-val {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--color-text);
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .stat-label {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+  }
+
+  .main-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 25px;
+  }
+  @media (max-width: 768px) {
+    .main-split {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .quick-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--color-text);
+    margin-bottom: 10px;
+    transition: all 0.2s;
+  }
+  [data-theme='light'] .quick-action-btn {
+    background: rgba(0,0,0,0.03);
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+  .quick-action-btn:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+    transform: translateY(-2px);
+  }
+  .quick-action-btn:hover .qa-desc, .quick-action-btn:hover .qa-icon {
+    color: rgba(255,255,255,0.9);
+  }
+  .qa-icon {
+    font-size: 24px;
+    color: var(--color-primary);
+  }
+  .qa-text-col {
+    display: flex;
+    flex-direction: column;
+  }
+  .qa-title {
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .qa-desc {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+
+  .profile-name { font-size: 1.5rem; font-weight: 800; color: var(--color-text); text-align: center; margin-bottom: 2px; }
+  .profile-email { font-size: 0.9rem; color: var(--color-text-muted); text-align: center; margin-bottom: 20px; }
+  
+  .journey-item {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .journey-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 25px;
+    bottom: -15px;
+    width: 2px;
+    background: rgba(255,255,255,0.1);
+  }
+  [data-theme='light'] .journey-item:not(:last-child)::after {
+    background: rgba(0,0,0,0.1);
+  }
+  .journey-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    z-index: 1;
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    color: var(--color-text-muted);
+  }
+  .journey-item.completed .journey-icon {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+  }
+  .journey-content {
+    flex: 1;
+  }
+  .journey-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--color-text);
+  }
+  .journey-action {
+    margin-top: 5px;
+    display: inline-block;
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.1);
+    color: var(--color-text);
+    border-radius: 4px;
+    text-decoration: none;
+  }
+  [data-theme='light'] .journey-action { background: rgba(0,0,0,0.05); }
+  .journey-action:hover { background: var(--color-primary); color: white; }
+
+  .empty-state {
+    padding: 30px;
+    text-align: center;
+    color: var(--color-text-muted);
+    font-style: italic;
+    background: rgba(0,0,0,0.1);
+    border-radius: 12px;
+  }
+  [data-theme='light'] .empty-state { background: rgba(0,0,0,0.02); }
+
+  .risk-badge {
+    padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 0.75rem; display: inline-block;
+  }
+  .risk-high { background: #fee2e2; color: #dc2626; }
+  .risk-medium { background: #fef3c7; color: #d97706; }
+  .risk-low { background: #dcfce7; color: #16a34a; }
+  
+  .insight-card {
+    background: rgba(14, 165, 233, 0.1);
+    border: 1px solid rgba(14, 165, 233, 0.3);
+    padding: 15px;
+    border-radius: 12px;
+    color: var(--color-text);
+    font-size: 0.9rem;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .chart-container {
+    height: 200px;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    justify-content: center;
+    padding-top: 20px;
+  }
+  .chart-bar {
+    width: 40px;
+    background: var(--color-primary);
+    border-radius: 4px 4px 0 0;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    transition: height 0.5s ease;
+  }
+  .chart-bar-label {
+    position: absolute;
+    bottom: -25px;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    text-align: center;
+    transform: rotate(-45deg);
+  }
+  .chart-bar-val {
+    position: absolute;
+    top: -20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+
+<div class="dashboard-wrapper">
+  
+  <!-- Full Width Header -->
+  <div class="dashboard-header-top">
+    <h1 class="dashboard-title">My Health Dashboard</h1>
+    <p class="dashboard-subtitle">Your personal health overview. Manage and monitor your health securely.</p>
+  </div>
+
+  <div class="dashboard-grid">
+    
+    <!-- LEFT SIDEBAR -->
+    <div class="dashboard-sidebar" style="display: flex; flex-direction: column; gap: 25px;">
+      
+      <!-- Profile Card -->
+      <div class="glass-card" style="align-items: center; padding-bottom: 15px;">
+        <div style="margin-bottom: 15px;">
+          {{ render_avatar(current_user, size='large') }}
+        </div>
+        <div class="profile-name">{{ current_user.full_name }}</div>
+        <div class="profile-email">{{ current_user.email }}</div>
+        
+        <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; margin-top: 5px; font-size: 0.9rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: var(--color-text-muted);">Member Since</span>
+            <span style="font-weight: 600; color: var(--color-text);">
+              {% if current_user.created_at %}{{ current_user.created_at.strftime('%b %Y') }}{% else %}N/A{% endif %}
+            </span>
+          </div>
+          <a href="{{ url_for('auth.settings') }}" style="display: block; text-align: center; padding: 10px; margin-top: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; color: var(--color-text); text-decoration: none; border: 1px solid rgba(255,255,255,0.1); font-weight: 600; transition: all 0.2s;">
+            <i class='bx bx-cog'></i> Account Settings
+          </a>
+        </div>
+      </div>
+
+      <!-- Health Journey -->
+      <div class="glass-card">
+        <div class="card-title"><i class='bx bx-map-alt'></i> Your Health Journey</div>
+        
+        <div class="journey-item completed">
+          <div class="journey-icon"><i class='bx bx-check'></i></div>
+          <div class="journey-content">
+            <div class="journey-title">Account Created</div>
+          </div>
+        </div>
+        
+        <div class="journey-item {% if has_first_assessment %}completed{% endif %}">
+          <div class="journey-icon">{% if has_first_assessment %}<i class='bx bx-check'></i>{% else %}<i class='bx bx-circle'></i>{% endif %}</div>
+          <div class="journey-content">
+            <div class="journey-title">First Assessment</div>
+            {% if not has_first_assessment %}
+            <a href="/diseases" class="journey-action">Take Assessment</a>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="journey-item {% if has_wellness %}completed{% endif %}">
+          <div class="journey-icon">{% if has_wellness %}<i class='bx bx-check'></i>{% else %}<i class='bx bx-circle'></i>{% endif %}</div>
+          <div class="journey-content">
+            <div class="journey-title">Daily Wellness Score</div>
+            {% if not has_wellness %}
+            <a href="/wellness" class="journey-action">Calculate Score</a>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="journey-item {% if has_prescription %}completed{% endif %}">
+          <div class="journey-icon">{% if has_prescription %}<i class='bx bx-check'></i>{% else %}<i class='bx bx-circle'></i>{% endif %}</div>
+          <div class="journey-content">
+            <div class="journey-title">Prescription Analysis</div>
+            {% if not has_prescription %}
+            <a href="/prescription" class="journey-action">Analyze Prescription</a>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- RIGHT MAIN AREA -->
+    <div class="dashboard-main">
+      
+      <!-- Health Overview Statistics -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon"><i class='bx bx-activity'></i></div>
+          <div class="stat-val">{{ activity_level }}</div>
+          <div class="stat-label">Health Activity</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class='bx bx-clipboard'></i></div>
+          <div class="stat-val">{{ total_assessments }}</div>
+          <div class="stat-label">Assessments Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class='bx bx-error-circle'></i></div>
+          <div class="stat-val">{{ high_risk_count }}</div>
+          <div class="stat-label">High-Risk Results</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class='bx bx-capsule'></i></div>
+          <div class="stat-val">{{ total_prescriptions }}</div>
+          <div class="stat-label">Prescriptions Analyzed</div>
+        </div>
+        <div class="stat-card" style="grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between;">
+          <div>
+            <div class="stat-icon" style="margin-bottom: 5px;"><i class='bx bx-time-five'></i></div>
+            <div class="stat-label">Last Assessment</div>
+            <div class="stat-val" style="font-size: 1.2rem; margin-top: 5px;">
+              {% if latest_assessment %}
+                {{ latest_assessment.disease_name }} 
+                <span class="risk-badge {% if latest_assessment.risk_level and 'High' in latest_assessment.risk_level or 'Critical' in latest_assessment.risk_level or 'Crisis' in latest_assessment.risk_level %}risk-high{% elif latest_assessment.risk_level and ('Medium' in latest_assessment.risk_level or 'Moderate' in latest_assessment.risk_level or 'Stage' in latest_assessment.risk_level) %}risk-medium{% else %}risk-low{% endif %}" style="margin-left: 8px;">
+                  {{ latest_assessment.risk_level }}
+                </span>
+              {% else %}
+                None
+              {% endif %}
+            </div>
+          </div>
+          {% if latest_assessment %}
+          <div style="text-align: right; color: var(--color-text-muted); font-size: 0.85rem;">
+            {% if latest_assessment.assessment_date %}{{ latest_assessment.assessment_date.strftime('%b %d, %Y') }}{% endif %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Split: Wellness & Quick Actions -->
+      <div class="main-split">
+        <div class="glass-card">
+          <div class="card-title"><i class='bx bx-leaf'></i> Daily Wellness Score</div>
+          {% if has_wellness %}
+            <div style="text-align: center; margin: auto 0;">
+              <div style="font-size: 3rem; color: #10b981; margin-bottom: 10px;"><i class='bx bx-spa'></i></div>
+              <div style="font-weight: 700; font-size: 2rem; margin-bottom: 5px; color: var(--color-primary);">{{ latest_wellness.score }} / 100</div>
+              <div style="color: var(--color-text-muted); font-size: 0.95rem; margin-bottom: 20px;">Status: <strong>{{ latest_wellness.status }}</strong><br>{{ latest_wellness.summary }}</div>
+              <div style="font-size: 0.8rem; color: #888; margin-bottom: 15px;">Last checked: {{ latest_wellness.created_at.strftime('%Y-%m-%d %H:%M') if latest_wellness.created_at else 'Recently' }}</div>
+              <a href="/wellness" style="text-decoration: none; display: inline-block; padding: 10px 20px; border-radius: 8px; background: var(--color-primary); color: white; font-weight: 600;">Re-Calculate My Score</a>
+            </div>
+          {% else %}
+            <div style="text-align: center; margin: auto 0;">
+              <div style="font-size: 3rem; color: #cbd5e1; margin-bottom: 10px;"><i class='bx bx-spa'></i></div>
+              <div style="font-weight: 700; font-size: 1.2rem; margin-bottom: 5px; color: var(--color-text);">Your Daily Wellness Score</div>
+              <div style="color: var(--color-text-muted); font-size: 0.95rem; margin-bottom: 20px;">Check your everyday habits and see where you can improve.</div>
+              <a href="/wellness" style="text-decoration: none; display: inline-block; padding: 10px 20px; border-radius: 8px; background: var(--color-primary); color: white; font-weight: 600;">Calculate My Score</a>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="glass-card">
+          <div class="card-title"><i class='bx bx-bolt-circle'></i> Quick Actions</div>
+          <div style="display: flex; flex-direction: column;">
+            <a href="/diseases" class="quick-action-btn">
+              <div class="qa-icon"><i class='bx bx-health'></i></div>
+              <div class="qa-text-col">
+                <span class="qa-title">New Assessment</span>
+                <span class="qa-desc">Check your risk for a health condition.</span>
+              </div>
+            </a>
+            <a href="/prescription" class="quick-action-btn">
+              <div class="qa-icon"><i class='bx bx-capsule'></i></div>
+              <div class="qa-text-col">
+                <span class="qa-title">Analyze Prescription</span>
+                <span class="qa-desc">Upload a prescription for AI-powered analysis.</span>
+              </div>
+            </a>
+            <a href="/wellness" class="quick-action-btn">
+              <div class="qa-icon"><i class='bx bx-spa'></i></div>
+              <div class="qa-text-col">
+                <span class="qa-title">Daily Wellness Score</span>
+                <span class="qa-desc">Review your everyday wellness habits.</span>
+              </div>
+            </a>
+            <a href="/hospitals" class="quick-action-btn">
+              <div class="qa-icon"><i class='bx bx-buildings'></i></div>
+              <div class="qa-text-col">
+                <span class="qa-title">Find Hospitals</span>
+                <span class="qa-desc">Find healthcare facilities near you.</span>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Split: Assessment Activity & Health Insights -->
+      <div class="main-split">
+        <div class="glass-card">
+          <div class="card-title"><i class='bx bx-bar-chart-square'></i> Assessment Activity</div>
+          {% if disease_counts %}
+            <div class="chart-container" style="padding-bottom: 25px;">
+              {% set max_val = disease_counts.values()|max %}
+              {% for disease, count in disease_counts.items() %}
+                {% set height = (count / max_val) * 150 %}
+                <div class="chart-bar" style="height: {{ height }}px;" title="{{ disease }}: {{ count }}">
+                  <div class="chart-bar-val">{{ count }}</div>
+                  <div class="chart-bar-label">{{ disease[:10] }}</div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-state" style="margin: auto 0;">
+              Complete more assessments to see your health activity trends.
+            </div>
+          {% endif %}
+        </div>
+        
+        <div class="glass-card">
+          <div class="card-title"><i class='bx bx-bulb'></i> Health Insights</div>
+          <div class="insight-card">
+            <i class='bx bx-info-circle' style="font-size: 24px; color: #0ea5e9;"></i>
+            <div>
+              <strong style="display: block; margin-bottom: 4px; color: var(--color-text);">{{ insight_title }}</strong>
+              <span style="color: var(--color-text-muted); line-height: 1.4; display: block;">{{ insight_text }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Assessments -->
+      <div class="glass-card" style="margin-bottom: 25px;">
+        <div class="card-title" style="justify-content: space-between; border-bottom: none; margin-bottom: 10px;">
+          <span><i class='bx bx-history'></i> Recent Assessments</span>
+        </div>
+        {% if assessments %}
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            {% for item in assessments[:5] %}
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(59,130,246,0.1); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                  {% if 'Heart' in item.disease_name %}<i class='bx bx-heart'></i>
+                  {% elif 'Diabetes' in item.disease_name %}<i class='bx bx-droplet'></i>
+                  {% elif 'Hypertension' in item.disease_name %}<i class='bx bx-pulse'></i>
+                  {% elif 'Obesity' in item.disease_name %}<i class='bx bx-body'></i>
+                  {% elif 'Asthma' in item.disease_name or 'Pneumonia' in item.disease_name %}<i class='bx bx-wind'></i>
+                  {% else %}<i class='bx bx-health'></i>{% endif %}
+                </div>
+                <div>
+                  <div style="font-weight: 600; font-size: 0.95rem; color: var(--color-text);">{{ item.disease_name }}</div>
+                  <div style="font-size: 0.8rem; color: var(--color-text-muted);">
+                    {% if item.assessment_date %}{{ item.assessment_date.strftime('%b %d, %Y') }}{% else %}Recently{% endif %}
+                  </div>
+                </div>
+              </div>
+              <span class="risk-badge {% if item.risk_level and 'High' in item.risk_level or 'Critical' in item.risk_level or 'Crisis' in item.risk_level %}risk-high{% elif item.risk_level and ('Medium' in item.risk_level or 'Moderate' in item.risk_level or 'Stage' in item.risk_level) %}risk-medium{% else %}risk-low{% endif %}">
+                {{ item.risk_level }}
+              </span>
+            </div>
+            {% endfor %}
+          </div>
+          {% if total_assessments > 5 %}
+          <div style="text-align: center; margin-top: 15px;">
+            <a href="/history" style="color: var(--color-primary); font-size: 0.9rem; font-weight: 600; text-decoration: none;">View Full Assessment History</a>
+          </div>
+          {% endif %}
+        {% else %}
+          <div class="empty-state">
+            Complete your first assessment to start building your health activity.
+            <br><br>
+            <a href="/diseases" style="text-decoration: none; display: inline-block; padding: 8px 16px; border-radius: 8px; background: var(--color-primary); color: white; font-weight: 600;">Take Assessment</a>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Split: Prescription Analysis & Saved Hospitals -->
+      <div class="main-split">
+        <div class="glass-card">
+          <div class="card-title"><i class='bx bx-file'></i> Prescription Analysis</div>
+          {% if prescriptions %}
+            <div style="margin-bottom: 15px;">
+              <strong style="color: var(--color-text);">Total Analyses:</strong> <span style="color: var(--color-text-muted);">{{ total_prescriptions }}</span>
+            </div>
+            {% set latest_rx = prescriptions[0] %}
+            <div style="padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px;">
+              <div style="font-weight: 600; font-size: 0.95rem; color: var(--color-text); margin-bottom: 5px;">Most Recent</div>
+              <div style="color: var(--color-text-muted); font-size: 0.85rem; margin-bottom: 5px;"><i class='bx bx-file-blank'></i> {{ latest_rx.file_name }}</div>
+              <div style="color: var(--color-text-muted); font-size: 0.8rem;">Uploaded: {% if latest_rx.uploaded_at %}{{ latest_rx.uploaded_at.strftime('%b %d, %Y') }}{% endif %}</div>
+            </div>
+          {% else %}
+            <div class="empty-state" style="margin: auto 0;">
+              No prescription analyses yet.
+              <br><br>
+              <span style="font-size: 0.85rem;">Upload a prescription to analyze its contents using the existing AI-powered feature.</span>
+              <br><br>
+              <a href="/prescription" style="text-decoration: none; display: inline-block; padding: 8px 16px; border-radius: 8px; background: var(--color-primary); color: white; font-weight: 600;">Analyze Prescription</a>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="glass-card">
+          <div class="card-title"><i class='bx bx-buildings'></i> Saved Hospitals</div>
+          {% if saved_hospitals %}
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              {% for h in saved_hospitals %}
+              <div style="padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px;">
+                <div style="font-weight: 600; font-size: 1rem; color: var(--color-text);">{{ h.hospital_name }}</div>
+                <div style="color: var(--color-text-muted); font-size: 0.85rem; margin-bottom: 8px;">{{ h.address }}</div>
+                <div style="display: flex; gap: 10px;">
+                  <a href="https://www.google.com/maps/dir/?api=1&destination={{ h.lat }},{{ h.lon }}" target="_blank" style="font-size: 0.8rem; text-decoration: none; color: var(--color-primary); font-weight: 600;"><i class='bx bx-navigation'></i> Directions</a>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+            <div style="margin-top: 15px; text-align: center;">
+              <a href="/hospitals" style="text-decoration: none; font-size: 0.9rem; color: var(--color-primary); font-weight: 600;">Find More Hospitals</a>
+            </div>
+          {% else %}
+            <div class="empty-state" style="margin: auto 0;">
+              No saved hospitals yet.
+              <br><br>
+              <span style="font-size: 0.85rem;">Find healthcare facilities and save useful hospitals for quick access.</span>
+              <br><br>
+              <a href="/hospitals" style="text-decoration: none; display: inline-block; padding: 8px 16px; border-radius: 8px; background: var(--color-primary); color: white; font-weight: 600;">Find Hospitals</a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

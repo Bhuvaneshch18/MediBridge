@@ -1,0 +1,729 @@
+{% from 'components/avatar.html' import render_avatar %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediBridge | Home</title>
+  <link rel="icon" type="image/svg+xml" href="../static/medibridge_logo.svg">
+  <link rel="stylesheet" href="../static/css/styles.css?v=2" />
+  <link rel="stylesheet" href="../static/css/theme.css" />
+  <link rel="stylesheet" href="../static/css/chatbot.css" />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <style>
+    .theme-switch {
+      position: relative;
+      display: inline-block;
+      width: 52px;
+      height: 28px;
+      margin-right: 12px;
+    }
+    .theme-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #cbd5e1;
+      transition: .4s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 6px;
+      border-radius: 28px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background-color: var(--color-surface);
+      transition: .4s;
+      border-radius: 50%;
+      z-index: 2;
+    }
+    input:checked + .slider {
+      background-color: var(--color-text);
+    }
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+    .slider i {
+      font-size: 14px;
+      color: #fff;
+      z-index: 1;
+    }
+    .bx-sun {
+      color: #f59e0b;
+    }
+    .bx-moon {
+      color: #f1f5f9;
+    }
+    /* Dropdown CSS */
+    .user-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    .user-dropdown-btn {
+      background: transparent;
+      border: 1px solid var(--color-border);
+      color: var(--color-text);
+      padding: 8px 16px;
+      font-size: 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .user-dropdown-btn:hover {
+      background: var(--color-surface);
+      border-color: var(--color-primary);
+    }
+    .user-dropdown::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      right: 0;
+      height: 10px;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: var(--color-surface);
+      min-width: 200px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
+      z-index: 1000;
+      border-radius: 8px;
+      border: 1px solid var(--color-border);
+      overflow: hidden;
+      margin-top: 5px;
+    }
+    .dropdown-content a {
+      color: var(--color-text);
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      font-size: 14px;
+      border-bottom: 1px solid var(--color-bg);
+      transition: background 0.2s;
+    }
+    .dropdown-content a:last-child {
+      border-bottom: none;
+    }
+    .dropdown-content a:hover {
+      background-color: var(--color-bg);
+      color: var(--color-primary);
+    }
+    .user-dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+  </style>
+  <script>
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  </script>
+</head>
+<body>
+  <!-- TOP NAVBAR -->
+  <header class="top-navbar">
+    <div class="nav-left">
+      <a href="/" class="logo-container" style="text-decoration: none;">
+        <img src="../static/medibridge_logo_horizontal.svg" alt="MediBridge Logo" class="logo-img">
+      </a>
+    </div>
+    
+    <div class="hamburger" id="hamburger">
+      <i class='bx bx-menu'></i>
+    </div>
+
+    <ul class="nav-links" id="navLinks">
+            <li><a href="/">Home</a></li>
+            <li><a href="/diseases">Diseases</a></li>
+            <li><a href="/diet">Diet Plans</a></li>
+            <li><a href="/hospitals">Hospitals</a></li>
+            <li><a href="/articles">Articles</a></li>
+            {% if current_user.is_authenticated %}
+            <li><a href="/wellness">Daily Wellness Score</a></li>
+            <li><a href="/prescription">Prescription Analysis</a></li>
+            <li><a href="{{ url_for('auth.profile') }}">My Dashboard</a></li>
+            {% endif %}
+        </ul>
+
+    <div class="nav-actions" id="navActions">
+      <label class="theme-switch" title="Toggle Theme">
+        <input type="checkbox" id="themeToggleCheckbox">
+        <span class="slider">
+          <i class='bx bx-moon'></i>
+          <i class='bx bx-sun'></i>
+        </span>
+      </label>
+      
+      {% if current_user.is_authenticated %}
+        <div class="user-dropdown">
+          <button class="user-dropdown-btn">
+            {{ render_avatar(current_user, size='small') }}
+            <span class="user-name-text">{{ current_user.full_name }}</span>
+          </button>
+          <div class="dropdown-content">
+            <a href="{{ url_for('auth.profile') }}">Dashboard</a>
+            <a href="{{ url_for('auth.settings') }}">Settings</a>
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+          </div>
+        </div>
+      {% else %}
+        <button class="sign-in-btn" onclick="window.location.href='{{ url_for('auth.login') }}'">Sign in</button>
+        <a href="/diseases" class="get-started-btn">
+          <i class='bx bx-log-in-circle'></i> Get started
+        </a>
+      {% endif %}
+    </div>
+  </header>
+
+
+
+  <div class="page-wrapper">
+    {% block content %}
+    {% endblock %}
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer fade-in">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <div class="logo-container">
+          <img src="../static/medibridge_logo.svg" alt="MediBridge Logo" style="height: 32px; width: 32px; border-radius: 6px;">
+          <span class="logo-text" style="color: white;">MediBridge</span>
+        </div>
+        <p>Your AI Healthcare Companion. Predict diseases, understand your health, and connect with care.</p>
+        <div class="social-links">
+          <a href="#"><i class='bx bxl-facebook'></i></a>
+          <a href="#"><i class='bx bxl-twitter'></i></a>
+          <a href="#"><i class='bx bxl-instagram'></i></a>
+          <a href="#"><i class='bx bxl-linkedin'></i></a>
+        </div>
+      </div>
+      <div class="footer-links">
+        <h3>Quick Links</h3>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/wellness">Daily Wellness Score</a></li>
+          <li><a href="/diseases">Diseases</a></li>
+          <li><a href="/articles">Articles</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h3>Legal</h3>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 MediBridge. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Chatbot Widget -->
+  <div class="chatbot-tooltip">Need Help? Ask AI!</div>
+  <button class="chatbot-toggle" id="chatbotToggle" title="Health Assistant">
+      <i class='bx bx-message-rounded-dots'></i>
+  </button>
+  <div class="chatbot-window" id="chatbotWindow">
+      <div class="chatbot-header">
+          <div class="chatbot-header-info">
+              <div class="chatbot-avatar">🏥</div>
+              <div class="chatbot-header-text">
+                  <h4>HealthPredict Bot</h4>
+                  <p>Always here to help</p>
+              </div>
+          </div>
+          <button class="chatbot-close" id="chatbotClose">✕</button>
+      </div>
+      <div class="chatbot-messages" id="chatbotMessages">
+          <div class="chat-message bot">Hi! 👋 I'm your HealthPredict Assistant. Ask me about any disease, symptoms, diet tips, or prevention methods!
+              <div class="chat-chips">
+                  <span class="chat-chip" onclick="sendChip(this)">Heart Disease</span>
+                  <span class="chat-chip" onclick="sendChip(this)">Diabetes</span>
+                  <span class="chat-chip" onclick="sendChip(this)">Asthma</span>
+                  <span class="chat-chip" onclick="sendChip(this)">Hypertension</span>
+                  <span class="chat-chip" onclick="sendChip(this)">Diet Tips</span>
+              </div>
+          </div>
+      </div>
+      <div class="chatbot-input">
+          <input type="text" id="chatbotInput" placeholder="Type your health question..." autocomplete="off">
+          <button id="chatbotSend">➤</button>
+      </div>
+  </div>
+
+  <script src="../static/js/chatbot.js"></script>
+  <script>
+    function handleButtonClick() {
+      // Legacy JS logic; optionally safely maintained for any other usage, 
+      // though sign-in is now handled directly via Flask rendering.
+      window.location.href = "{{ url_for('auth.login') }}";
+    }
+    // Remove the legacy ID-based replacement since Flask-Login handles it.
+
+
+    // Intersection Observer for scroll fade-in
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          
+          // Trigger counters if they are in this section
+          const counters = entry.target.querySelectorAll('.counter');
+          counters.forEach(counter => {
+            const updateCount = () => {
+              const target = +counter.getAttribute('data-target');
+              const count = +counter.innerText;
+              const speed = 200;
+              const inc = target / speed;
+
+              if (count < target) {
+                counter.innerText = Math.ceil(count + inc);
+                setTimeout(updateCount, 10);
+              } else {
+                counter.innerText = target + (target > 1000 ? '+' : '');
+              }
+            };
+            if(counter.innerText === '0') updateCount();
+          });
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // Rotating Health Tips
+    const tips = [
+      "Drink at least 8 glasses of water a day to stay hydrated and energetic.",
+      "Aim for 7-9 hours of quality sleep each night to allow your body to heal.",
+      "Incorporate at least 30 minutes of moderate physical activity into your daily routine.",
+      "Eat a balanced diet rich in fruits, vegetables, lean proteins, and whole grains."
+    ];
+    let tipIndex = 0;
+    const tipEl = document.getElementById('rotating-tip');
+    if(tipEl) {
+        setInterval(() => {
+        tipIndex = (tipIndex + 1) % tips.length;
+        tipEl.style.opacity = 0;
+        setTimeout(() => {
+            tipEl.innerText = tips[tipIndex];
+            tipEl.style.opacity = 1;
+        }, 500);
+        }, 4000);
+    }
+
+    // FAQ Accordion
+    document.querySelectorAll('.faq-question').forEach(button => {
+      button.addEventListener('click', () => {
+        const answer = button.nextElementSibling;
+        const icon = button.querySelector('i');
+        if (answer.style.maxHeight) {
+          answer.style.maxHeight = null;
+          icon.style.transform = 'rotate(0deg)';
+        } else {
+          answer.style.maxHeight = answer.scrollHeight + "px";
+          icon.style.transform = 'rotate(180deg)';
+        }
+      });
+    });
+
+    // Theme Toggle Logic
+    const themeCheckbox = document.getElementById('themeToggleCheckbox');
+
+    function updateThemeIcon() {
+      if (document.documentElement.getAttribute('data-theme') === 'dark') {
+        themeCheckbox.checked = true;
+      } else {
+        themeCheckbox.checked = false;
+      }
+    }
+
+    // Initial update
+    updateThemeIcon();
+
+    themeCheckbox.addEventListener('change', () => {
+      let newTheme = themeCheckbox.checked ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+    });
+
+    // Hamburger Menu Logic
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    const navActions = document.getElementById('navActions');
+    
+    if (hamburger) {
+      hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        navLinks.classList.toggle('active');
+        navActions.classList.toggle('active');
+      });
+    }
+  </script>
+
+  {% if current_user.is_authenticated %}
+  <style>
+    /* Rating Popup Styles */
+    #ratingPopup {
+      display: none; 
+      position: fixed; 
+      bottom: 24px; 
+      left: 24px; 
+      z-index: 10000; 
+      background: var(--color-surface); 
+      padding: 24px; 
+      border-radius: 16px; 
+      box-shadow: 0 12px 40px rgba(0,0,0,0.15); 
+      border: 1px solid var(--color-border); 
+      width: 320px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      font-family: inherit;
+    }
+    
+    [data-theme='light'] #ratingPopup {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(0,0,0,0.1);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+    }
+
+    @media (max-width: 480px) {
+      #ratingPopup {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        width: auto;
+        max-width: none;
+      }
+    }
+
+    #ratingPopup.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .rating-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .rating-title {
+      margin: 0; 
+      color: var(--color-text); 
+      font-size: 1.1rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .rating-close-btn {
+      background: none; 
+      border: none; 
+      font-size: 20px; 
+      cursor: pointer; 
+      color: var(--color-text-muted);
+      padding: 0;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+    
+    .rating-close-btn:hover, .rating-close-btn:focus {
+      color: var(--color-text);
+      outline: none;
+    }
+
+    .rating-desc {
+      color: var(--color-text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    .rating-stars {
+      display: flex; 
+      justify-content: center;
+      gap: 8px; 
+      margin-bottom: 8px;
+    }
+
+    .rating-star-icon {
+      font-size: 32px; 
+      cursor: pointer; 
+      color: #cbd5e1;
+      transition: transform 0.1s, color 0.2s;
+    }
+    
+    .rating-star-icon:hover, .rating-star-icon:focus {
+      transform: scale(1.1);
+      outline: none;
+    }
+    
+    [data-theme='dark'] .rating-star-icon {
+      color: rgba(255, 255, 255, 0.15);
+    }
+
+    .rating-label {
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--color-primary);
+      height: 20px;
+      margin-bottom: 20px;
+    }
+
+    .rating-submit-btn {
+      background: var(--color-primary); 
+      color: white; 
+      border: none; 
+      padding: 12px; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      width: 100%; 
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+    
+    .rating-submit-btn:disabled {
+      background: rgba(14, 165, 233, 0.3);
+      color: rgba(255, 255, 255, 0.5);
+      cursor: not-allowed;
+    }
+    
+    [data-theme='light'] .rating-submit-btn:disabled {
+      background: #e2e8f0;
+      color: #94a3b8;
+    }
+    
+    .rating-submit-btn:not(:disabled):hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .rating-later-btn {
+      background: transparent;
+      border: none;
+      color: var(--color-text-muted);
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    
+    .rating-later-btn:hover, .rating-later-btn:focus {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--color-text);
+      outline: none;
+    }
+    
+    [data-theme='light'] .rating-later-btn:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    
+    .rating-success-state {
+      display: none;
+      text-align: center;
+      padding: 20px 0;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .rating-success-icon {
+      font-size: 48px;
+      color: #10b981;
+      margin-bottom: 15px;
+    }
+  </style>
+
+  <div id="ratingPopup" role="dialog" aria-labelledby="ratingTitle" aria-describedby="ratingDesc">
+    
+    <!-- Main Content -->
+    <div id="ratingContent">
+      <div class="rating-header">
+        <h3 id="ratingTitle" class="rating-title">⭐ Rate your MediBridge experience</h3>
+        <button id="closeRating" class="rating-close-btn" aria-label="Close rating popup">&times;</button>
+      </div>
+      
+      <div id="ratingDesc" class="rating-desc">How was your experience using MediBridge?</div>
+      
+      <div class="rating-stars" role="radiogroup" aria-label="Rating">
+        <i class='bx bx-star rating-star-icon' tabindex="0" data-value="1" aria-label="Rate 1 star" role="radio" aria-checked="false"></i>
+        <i class='bx bx-star rating-star-icon' tabindex="0" data-value="2" aria-label="Rate 2 stars" role="radio" aria-checked="false"></i>
+        <i class='bx bx-star rating-star-icon' tabindex="0" data-value="3" aria-label="Rate 3 stars" role="radio" aria-checked="false"></i>
+        <i class='bx bx-star rating-star-icon' tabindex="0" data-value="4" aria-label="Rate 4 stars" role="radio" aria-checked="false"></i>
+        <i class='bx bx-star rating-star-icon' tabindex="0" data-value="5" aria-label="Rate 5 stars" role="radio" aria-checked="false"></i>
+      </div>
+      
+      <div id="ratingLabel" class="rating-label"></div>
+      
+      <button id="submitRating" class="rating-submit-btn" disabled>Submit Rating</button>
+      <button id="reviewLater" class="rating-later-btn">Review Later</button>
+    </div>
+
+    <!-- Success Content -->
+    <div id="ratingSuccess" class="rating-success-state">
+      <i class='bx bx-check-circle rating-success-icon'></i>
+      <h3 style="margin: 0 0 10px 0; color: var(--color-text); font-size: 1.2rem;">Thank you!</h3>
+      <div style="color: var(--color-text-muted); font-size: 0.95rem;">Your feedback helps us improve MediBridge.</div>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!sessionStorage.getItem('ratingDismissed')) {
+        setTimeout(() => {
+          const popup = document.getElementById('ratingPopup');
+          if (popup) {
+            popup.style.display = 'block';
+            setTimeout(() => {
+              popup.classList.add('show');
+            }, 10);
+          }
+        }, 30000);
+      }
+      
+      const stars = document.querySelectorAll('.rating-star-icon');
+      const ratingLabel = document.getElementById('ratingLabel');
+      const submitBtn = document.getElementById('submitRating');
+      const popup = document.getElementById('ratingPopup');
+      
+      let currentRating = 0;
+      
+      const labels = {
+        1: "1 &rarr; Poor",
+        2: "2 &rarr; Fair",
+        3: "3 &rarr; Okay",
+        4: "4 &rarr; Good",
+        5: "5 &rarr; Excellent"
+      };
+
+      function updateStars(value) {
+        stars.forEach(s => {
+          const starVal = parseInt(s.getAttribute('data-value'));
+          if (starVal <= value) {
+            s.classList.replace('bx-star', 'bxs-star');
+            s.style.color = '#f59e0b';
+          } else {
+            s.classList.replace('bxs-star', 'bx-star');
+            s.style.color = ''; 
+          }
+        });
+        if (value > 0) {
+          ratingLabel.innerHTML = labels[value];
+        } else {
+          ratingLabel.innerHTML = '';
+        }
+      }
+
+      stars.forEach(star => {
+        star.addEventListener('mouseenter', (e) => {
+          const hoverVal = parseInt(e.target.getAttribute('data-value'));
+          updateStars(hoverVal);
+        });
+        
+        star.addEventListener('mouseleave', () => {
+          updateStars(currentRating);
+        });
+
+        star.addEventListener('click', (e) => {
+          currentRating = parseInt(e.target.getAttribute('data-value'));
+          updateStars(currentRating);
+          submitBtn.disabled = false;
+          stars.forEach(s => s.setAttribute('aria-checked', 'false'));
+          e.target.setAttribute('aria-checked', 'true');
+        });
+        
+        star.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            star.click();
+          }
+        });
+      });
+
+      function dismissPopup() {
+        if(popup) {
+          popup.classList.remove('show');
+          setTimeout(() => {
+            popup.style.display = 'none';
+          }, 300);
+        }
+        sessionStorage.setItem('ratingDismissed', 'true');
+      }
+
+      const closeBtn = document.getElementById('closeRating');
+      const reviewLaterBtn = document.getElementById('reviewLater');
+      if (closeBtn) closeBtn.addEventListener('click', dismissPopup);
+      if (reviewLaterBtn) reviewLaterBtn.addEventListener('click', dismissPopup);
+
+      if (submitBtn) {
+        submitBtn.addEventListener('click', () => {
+          if (currentRating === 0) return;
+          
+          submitBtn.disabled = true;
+          submitBtn.innerText = "Submitting...";
+
+          fetch('/api/submit_rating', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rating: currentRating })
+          }).then(response => {
+            if (response.ok) {
+              document.getElementById('ratingContent').style.display = 'none';
+              document.getElementById('ratingSuccess').style.display = 'block';
+              sessionStorage.setItem('ratingDismissed', 'true');
+              
+              setTimeout(() => {
+                dismissPopup();
+              }, 2500);
+            } else {
+              submitBtn.disabled = false;
+              submitBtn.innerText = "Submit Rating";
+              alert("Failed to submit rating. Please try again.");
+            }
+          }).catch(err => {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Submit Rating";
+          });
+        });
+      }
+    });
+  </script>
+  {% else %}
+  <script>
+    // Clear the dismissed flag when logged out so it shows again on next login
+    sessionStorage.removeItem('ratingDismissed');
+  </script>
+  {% endif %}
+</body>
+</html>

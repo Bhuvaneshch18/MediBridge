@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container page-wrapper">
+  <div class="card" style="max-width: 800px; margin: 0 auto;">
+    <div class="card-header text-center">
+      <h2>Edit Profile</h2>
+      <p>Update your personal and health information.</p>
+    </div>
+
+    <div class="card-body">
+      <form action="{{ url_for('edit_profile') }}" method="POST">
+        
+        <h3 style="border-bottom: 1px solid var(--color-border); padding-bottom: 10px; margin-bottom: 20px;">Personal Details</h3>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="name">Full Name</label>
+            <input type="text" class="form-control" placeholder="Enter your name" id="name" name="name" value="{{ user.name }}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="date_of_birth">Date of Birth</label>
+            <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" value="{{ user.date_of_birth }}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="email">Email</label>
+            <input type="email" class="form-control" placeholder="Enter your email" id="email" name="email" value="{{ user.email }}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="phone">Mobile Number</label>
+            <input type="number" class="form-control" placeholder="Enter mobile number" id="phone" name="phone" value="{{ user.phone }}" required>
+            <small class="error-msg" style="color: var(--color-danger); display: none; margin-top: 5px; font-size: 12px;">Phone number must be 10 digits.</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="gender">Gender</label>
+            <select id="gender" name="gender" class="form-control" required>
+              <option value="" disabled hidden {% if not user.gender %}selected{% endif %}>Select gender</option>
+              <option value="Male" {% if user.gender == 'Male' %}selected{% endif %}>Male</option>
+              <option value="Female" {% if user.gender == 'Female' %}selected{% endif %}>Female</option>
+              <option value="Others" {% if user.gender == 'Others' %}selected{% endif %}>Others</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="blood_group">Blood Group</label>
+            <select id="blood_group" name="blood_group" class="form-control" required>
+              <option value="" disabled hidden {% if not user.blood_group %}selected{% endif %}>Select blood group</option>
+              <option value="A+" {% if user.blood_group == 'A+' %}selected{% endif %}>A+</option>
+              <option value="A-" {% if user.blood_group == 'A-' %}selected{% endif %}>A-</option>
+              <option value="B+" {% if user.blood_group == 'B+' %}selected{% endif %}>B+</option>
+              <option value="B-" {% if user.blood_group == 'B-' %}selected{% endif %}>B-</option>
+              <option value="AB+" {% if user.blood_group == 'AB+' %}selected{% endif %}>AB+</option>
+              <option value="AB-" {% if user.blood_group == 'AB-' %}selected{% endif %}>AB-</option>
+              <option value="O+" {% if user.blood_group == 'O+' %}selected{% endif %}>O+</option>
+              <option value="O-" {% if user.blood_group == 'O-' %}selected{% endif %}>O-</option>
+            </select>
+          </div>
+        </div>
+
+        <h3 style="border-bottom: 1px solid var(--color-border); padding-bottom: 10px; margin-top: 30px; margin-bottom: 20px;">Identity Details</h3>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="age">Age</label>
+            <input type="number" class="form-control" placeholder="Enter your age" id="age" name="age" {% if user.age %}value="{{ user.age }}"{% endif %} required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="nationality">Nationality</label>
+            <input type="text" class="form-control" id="nationality" placeholder="Enter nationality">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="state">State</label>
+            <input type="text" class="form-control" id="state" placeholder="Enter your state">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="city">City</label>
+            <input type="text" class="form-control" id="city" placeholder="Enter your city">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 16px; margin-top: 24px;">
+          <a href="/dashboard" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary" id="submit-btn">Save Changes <i class='bx bx-save'></i></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const phoneNumberInput = document.getElementById('phone');
+  const errorMsg = document.querySelector('.error-msg');
+  const submitBtn = document.getElementById('submit-btn');
+
+  phoneNumberInput.addEventListener('input', function() {
+    const phoneNumber = this.value;
+    if (phoneNumber.length !== 10) {
+      errorMsg.style.display = 'block';
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = 0.5;
+    } else {
+      errorMsg.style.display = 'none';
+      submitBtn.disabled = false;
+      submitBtn.style.opacity = 1;
+    }
+  });
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    var dateOfBirthInput = document.getElementById('date_of_birth');
+    var today = new Date().toISOString().split('T')[0];
+    dateOfBirthInput.setAttribute('max', today);
+  });
+</script>
+{% endblock %}

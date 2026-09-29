@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .article-content {
+        background: var(--color-surface);
+        padding: 40px;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        line-height: 1.8;
+        color: var(--color-text);
+        max-width: 900px;
+        margin: 0 auto;
+        border: 1px solid var(--color-border);
+    }
+    .article-content h2 {
+        color: var(--color-text);
+        margin-top: 30px;
+        margin-bottom: 15px;
+        font-size: 24px;
+        border-bottom: 2px solid var(--color-bg);
+        padding-bottom: 10px;
+    }
+    .article-content h3 {
+        color: var(--color-text);
+        margin-top: 25px;
+        margin-bottom: 10px;
+        font-size: 20px;
+    }
+    .article-content p {
+        margin-bottom: 15px;
+        color: var(--color-text-muted);
+    }
+    .article-content ul {
+        margin-bottom: 15px;
+        padding-left: 20px;
+        color: var(--color-text-muted);
+    }
+    .article-content li {
+        margin-bottom: 8px;
+    }
+    .article-content strong {
+        color: var(--color-text);
+        font-weight: 600;
+    }
+</style>
+
+<div class="container page-wrapper">
+    <div style="max-width: 1000px; margin: 0 auto;">
+        <div style="margin-bottom: 20px;">
+            <a href="/articles" class="btn btn-secondary"><i class='bx bx-arrow-back'></i> Back to Articles</a>
+        </div>
+        
+        <div class="text-center mb-4">
+            <h1 style="font-size: 2.5rem; font-weight: 700; color: var(--color-text); margin-bottom: 10px;">{{ disease }}</h1>
+            <p style="font-size: 1.1rem; color: var(--color-text-muted);">Medical Insights & Analysis</p>
+        </div>
+        
+        <div class="article-content">
+            {{ content|safe }}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,952 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+  /* Diet Page Specific Styles */
+  .diet-hero {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(20, 184, 166, 0.1));
+    padding: 60px 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .diet-hero h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 16px;
+  }
+  .diet-hero p {
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    max-width: 650px;
+    margin: 0 auto;
+  }
+
+  /* Disease Selection Cards */
+  .disease-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 20px;
+    margin: 40px 0;
+  }
+  .disease-grid > * {
+    grid-column: span 2;
+  }
+  .disease-grid > *:nth-child(4) {
+    grid-column: 2 / span 2;
+  }
+  .disease-grid > *:nth-child(5) {
+    grid-column: 4 / span 2;
+  }
+  @media(max-width: 992px) {
+    .disease-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .disease-grid > *,
+    .disease-grid > *:nth-child(4),
+    .disease-grid > *:nth-child(5) {
+      grid-column: span 1;
+    }
+  }
+  @media(max-width: 480px) {
+    .disease-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .disease-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 24px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .icon-circle {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(20, 184, 166, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+  }
+  .disease-card i {
+    font-size: 32px;
+    color: var(--color-primary);
+  }
+  .disease-card h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  .disease-card:hover, .disease-card.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px rgba(20, 184, 166, 0.2);
+  }
+  .disease-card:hover .icon-circle, .disease-card.active .icon-circle {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  .disease-card:hover i, .disease-card.active i,
+  .disease-card:hover h3, .disease-card.active h3 {
+    color: #fff;
+  }
+
+  /* Diet Plan Content Area */
+  .diet-content-area {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border);
+    padding: 40px;
+    margin-bottom: 40px;
+    display: none; /* Shown via JS */
+  }
+  .diet-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--color-primary-light);
+    margin-bottom: 24px;
+  }
+  .diet-section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  /* Modern Toggle Switch */
+  .diet-toggle-container {
+    display: flex;
+    background: var(--color-bg);
+    padding: 6px;
+    border-radius: 50px;
+    border: 1px solid var(--color-border);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+  }
+  .diet-toggle-btn {
+    padding: 10px 22px;
+    border-radius: 50px;
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .diet-toggle-btn:hover {
+    color: var(--color-text);
+  }
+  .diet-toggle-btn#btn-veg.active {
+    background: #10b981;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+  }
+  .diet-toggle-btn#btn-non-veg.active {
+    background: #f97316;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);
+  }
+  
+  /* Two column lists */
+  .diet-lists-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 40px;
+  }
+  @media(max-width: 768px) {
+    .diet-lists-grid {
+      grid-template-columns: 1fr;
+    }
+    .diet-header-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+  .diet-list-card {
+    background: var(--color-bg);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    border: 1px solid var(--color-border);
+  }
+  .diet-list-card h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+  }
+  .diet-list-card.recommended h4 { color: #16a34a; }
+  .diet-list-card.avoid h4 { color: #dc2626; }
+  .diet-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .diet-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+  }
+  .diet-list.recommended li i { color: #16a34a; margin-top: 3px; }
+  .diet-list.avoid li i { color: #dc2626; margin-top: 3px; }
+
+  /* Grid blocks for Meals & Tips */
+  .info-blocks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+  .info-block {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .info-block i {
+    font-size: 1.8rem;
+    color: var(--color-secondary);
+    margin-bottom: 12px;
+  }
+  .info-block h4 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: var(--color-text);
+  }
+  .info-block p {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+
+  /* Weekly Meal Plan Table */
+  .meal-plan-table-wrapper {
+    overflow-x: auto;
+    margin-bottom: 40px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+  }
+  .meal-plan-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-surface);
+    min-width: 600px;
+  }
+  .meal-plan-table th, .meal-plan-table td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .meal-plan-table th {
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+  .meal-plan-table tr:last-child td {
+    border-bottom: none;
+  }
+  .meal-plan-table tbody tr:hover {
+    background: var(--color-bg);
+  }
+
+  /* Nutrition Tips */
+  .nutrition-tips {
+    margin-bottom: 60px;
+  }
+  .nutrition-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    margin-bottom: 16px;
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+  }
+  .nutrition-card img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+  .nutrition-card-content h4 {
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+    color: var(--color-text);
+  }
+  .nutrition-card-content p {
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+  }
+
+  /* Disclaimer */
+  .disclaimer {
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    padding: 20px;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    color: #92400e;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+  .disclaimer i {
+    font-size: 1.5rem;
+    color: #f59e0b;
+  }
+</style>
+
+<!-- Hero Section -->
+<section class="diet-hero fade-in">
+  <h1>Personalized Diet Plans</h1>
+  <p>Healthy eating recommendations tailored for your medical conditions and dietary preferences.</p>
+</section>
+
+<div class="container page-wrapper">
+  
+  <!-- Disease Selection Cards -->
+  <div class="disease-grid fade-in">
+    <div class="disease-card" onclick="showDiet('Diabetes', this)">
+      <div class="icon-circle"><i class='bx bx-water'></i></div>
+      <h3>Diabetes</h3>
+    </div>
+    <div class="disease-card" onclick="showDiet('Heart Disease', this)">
+      <div class="icon-circle"><i class='bx bx-heart'></i></div>
+      <h3>Heart Disease</h3>
+    </div>
+    <div class="disease-card" onclick="showDiet('Hypertension', this)">
+      <div class="icon-circle"><i class='bx bx-pulse'></i></div>
+      <h3>Hypertension</h3>
+    </div>
+    <div class="disease-card" onclick="showDiet('Asthma', this)">
+      <div class="icon-circle"><i class='bx bx-wind'></i></div>
+      <h3>Asthma</h3>
+    </div>
+    <div class="disease-card" onclick="showDiet('Obesity', this)">
+      <div class="icon-circle"><i class='bx bx-run'></i></div>
+      <h3>Obesity</h3>
+    </div>
+  </div>
+
+  <!-- Dynamic Diet Plan Content -->
+  <div id="diet-content-area" class="diet-content-area fade-in">
+    
+    <div class="diet-header-row">
+      <h2 class="diet-section-title" id="diet-title"><i class='bx bx-restaurant'></i> <span id="diet-disease-name">Diabetes</span> Diet Plan</h2>
+      
+      <!-- Veg / Non-Veg Toggle -->
+      <div class="diet-toggle-container">
+        <button class="diet-toggle-btn active" id="btn-veg" onclick="setDietMode('veg')">🥗 Vegetarian (Veg)</button>
+        <button class="diet-toggle-btn" id="btn-non-veg" onclick="setDietMode('non_veg')">🍗 Non-Vegetarian (Non-Veg)</button>
+      </div>
+    </div>
+    
+    <!-- Recommended / Avoid Lists -->
+    <div class="diet-lists-grid">
+      <div class="diet-list-card recommended">
+        <h4><i class='bx bx-check-circle'></i> Recommended Foods</h4>
+        <ul class="diet-list recommended" id="list-recommended">
+          <li><i class='bx bx-check'></i> Leafy green vegetables (Spinach, Kale, Methi)</li>
+          <li><i class='bx bx-check'></i> Whole grains (Oats, Quinoa, Brown rice, Ragi)</li>
+          <li><i class='bx bx-check'></i> Plant proteins (Paneer, Tofu, Moong Dal, Chickpeas)</li>
+          <li><i class='bx bx-check'></i> Low-glycemic fruits (Guava, Berries, Jamun, Apples)</li>
+          <li><i class='bx bx-check'></i> Healthy fats (Almonds, Walnuts, Flaxseeds, Olive oil)</li>
+        </ul>
+      </div>
+      <div class="diet-list-card avoid">
+        <h4><i class='bx bx-x-circle'></i> Foods to Avoid</h4>
+        <ul class="diet-list avoid" id="list-avoid">
+          <li><i class='bx bx-x'></i> Highly processed foods and fast food</li>
+          <li><i class='bx bx-x'></i> Sugary beverages, packaged juices, and sodas</li>
+          <li><i class='bx bx-x'></i> Refined carbohydrates (White bread, Maida, Pastries)</li>
+          <li><i class='bx bx-x'></i> Excessive salt and sodium-rich snacks</li>
+          <li><i class='bx bx-x'></i> Trans fats and heavily fried foods</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Meal Suggestions & Tips -->
+    <h3 style="font-size: 1.4rem; margin-bottom: 20px; color: var(--color-text);">Daily Meal Suggestions</h3>
+    <div class="info-blocks-grid">
+      <div class="info-block">
+        <i class='bx bx-coffee' style="color: #f59e0b;"></i>
+        <h4>Breakfast Suggestions</h4>
+        <p id="sugg-breakfast">Sprouted moong dal chilla with mint chutney, or steel-cut oats with almonds and chia seeds.</p>
+      </div>
+      <div class="info-block">
+        <i class='bx bx-bowl-hot' style="color: #ef4444;"></i>
+        <h4>Lunch Suggestions</h4>
+        <p id="sugg-lunch">2 Multigrain rotis, a bowl of mixed dal, steamed spinach (palak), and cucumber raita.</p>
+      </div>
+      <div class="info-block">
+        <i class='bx bx-dish' style="color: #8b5cf6;"></i>
+        <h4>Dinner Suggestions</h4>
+        <p id="sugg-dinner">Grilled paneer or tofu tikka with sautéed broccoli, bell peppers, and a small bowl of quinoa.</p>
+      </div>
+      <div class="info-block">
+        <i class='bx bx-cookie' style="color: #10b981;"></i>
+        <h4>Healthy Snacks</h4>
+        <p id="sugg-snacks">Roasted makhana (fox nuts), a handful of raw walnuts, or unsweetened buttermilk (chaas).</p>
+      </div>
+    </div>
+
+    <!-- Lifestyle & Hydration -->
+    <div class="info-blocks-grid">
+      <div class="info-block">
+        <i class='bx bx-water' style="color: #0ea5e9;"></i>
+        <h4>Hydration Tips</h4>
+        <p id="tip-hydration">Drink at least 8-10 glasses of water daily. Try cinnamon or methi seed infused water in the morning.</p>
+      </div>
+      <div class="info-block">
+        <i class='bx bx-run' style="color: #22c55e;"></i>
+        <h4>Lifestyle Tips</h4>
+        <p id="tip-lifestyle">Go for a 15-minute brisk walk after every meal to help regulate post-meal blood sugar levels.</p>
+      </div>
+      <div class="info-block">
+        <i class='bx bx-leaf' style="color: #14b8a6;"></i>
+        <h4>Fruits & Vegetables</h4>
+        <p id="tip-fruits">Aim to fill half your plate with colorful, non-starchy green vegetables at every main meal.</p>
+      </div>
+    </div>
+
+    <!-- Weekly Meal Plan Table -->
+    <h3 style="font-size: 1.4rem; margin-bottom: 20px; color: var(--color-text);">Sample 7-Day Meal Plan</h3>
+    <div class="meal-plan-table-wrapper">
+      <table class="meal-plan-table">
+        <thead>
+          <tr>
+            <th>Day</th>
+            <th>Breakfast</th>
+            <th>Lunch</th>
+            <th>Dinner</th>
+          </tr>
+        </thead>
+        <tbody id="meal-plan-tbody">
+          <tr>
+            <td><strong>Monday</strong></td>
+            <td>Oats porridge with chia seeds</td>
+            <td>Multigrain roti, Palak dal, cucumber salad</td>
+            <td>Grilled tofu with stir-fried veggies</td>
+          </tr>
+          <tr>
+            <td><strong>Tuesday</strong></td>
+            <td>Moong dal chilla with green chutney</td>
+            <td>Brown rice, Rajma (kidney beans), mixed veg</td>
+            <td>Paneer bhurji with bell peppers & 1 roti</td>
+          </tr>
+          <tr>
+            <td><strong>Wednesday</strong></td>
+            <td>Vegetable poha with peanuts</td>
+            <td>Quinoa pulao with vegetables and curd</td>
+            <td>Clear vegetable soup & sautéed mushrooms</td>
+          </tr>
+          <tr>
+            <td><strong>Thursday</strong></td>
+            <td>Ragi dosa with sambar</td>
+            <td>2 Rotis, Chana dal, bhindi masala, salad</td>
+            <td>Baked paneer with steamed broccoli</td>
+          </tr>
+          <tr>
+            <td><strong>Friday</strong></td>
+            <td>Besan cheela with tomatoes</td>
+            <td>Brown rice, Kala chana curry, cabbage thoran</td>
+            <td>Tofu salad with olive oil dressing</td>
+          </tr>
+          <tr>
+            <td><strong>Saturday</strong></td>
+            <td>Broken wheat upma with veggies</td>
+            <td>Multigrain roti, Dal makhani (light), green salad</td>
+            <td>Stir-fried vegetables with quinoa</td>
+          </tr>
+          <tr>
+            <td><strong>Sunday</strong></td>
+            <td>Idli with vegetable sambar</td>
+            <td>2 Rotis, mixed vegetable curry, dal, curd</td>
+            <td>Sprouted salad and vegetable soup</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div> <!-- End dynamic diet area -->
+
+  <!-- Nutrition Tips Section -->
+  <div class="nutrition-tips fade-in">
+    <h3 style="font-size: 1.6rem; margin-bottom: 24px; color: var(--color-text);">General Nutrition Tips</h3>
+    
+    <div class="nutrition-card">
+      <img src="https://placehold.co/100x100/14B8A6/FFFFFF?text=Portion" alt="Portion Control">
+      <div class="nutrition-card-content">
+        <h4>Practice Portion Control</h4>
+        <p>Use smaller plates and listen to your body's hunger cues to avoid overeating. Eating slowly can also help your brain recognize when you're full.</p>
+      </div>
+    </div>
+    
+    <div class="nutrition-card">
+      <img src="https://placehold.co/100x100/0EA5E9/FFFFFF?text=Sugar" alt="Reduce Sugar">
+      <div class="nutrition-card-content">
+        <h4>Limit Added Sugars</h4>
+        <p>Check nutrition labels for hidden sugars in sauces, dressings, and packaged foods. Opt for natural sweetness from fruits instead.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Disclaimer -->
+  <div class="disclaimer fade-in">
+    <i class='bx bx-info-circle'></i>
+    <div>
+      <strong>Medical Disclaimer:</strong> This diet plan is for educational purposes only and should not replace professional medical or nutritional advice. Always consult with a healthcare provider or a registered dietitian before making significant changes to your diet, especially if you have underlying medical conditions.
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let currentDisease = 'Diabetes';
+  let currentMode = 'veg'; // Default to Vegetarian mode
+
+  const dietData = {
+    'Diabetes': {
+      'veg': {
+        recommended: [
+          "Leafy green vegetables (Spinach, Kale, Methi)",
+          "Whole grains (Oats, Quinoa, Brown rice, Ragi)",
+          "Plant proteins (Paneer, Tofu, Moong Dal, Chickpeas)",
+          "Low-glycemic fruits (Guava, Berries, Jamun, Apples)",
+          "Healthy fats (Almonds, Walnuts, Flaxseeds, Olive oil)"
+        ],
+        avoid: [
+          "Highly processed foods and fast food",
+          "Sugary beverages, packaged juices, and sodas",
+          "Refined carbohydrates (White bread, Maida, Pastries)",
+          "Excessive salt and sodium-rich snacks",
+          "Trans fats and heavily fried foods"
+        ],
+        breakfast: "Sprouted moong dal chilla with mint chutney, or steel-cut oats with almonds and chia seeds.",
+        lunch: "2 Multigrain rotis, a bowl of mixed dal, steamed spinach (palak), and cucumber raita.",
+        dinner: "Grilled paneer or tofu tikka with sautéed broccoli, bell peppers, and a small bowl of quinoa.",
+        snacks: "Roasted makhana (fox nuts), a handful of raw walnuts, or unsweetened buttermilk (chaas).",
+        hydration: "Drink at least 8-10 glasses of water daily. Try cinnamon or methi seed infused water in the morning.",
+        lifestyle: "Go for a 15-minute brisk walk after every meal to help regulate post-meal blood sugar levels.",
+        fruits_veg: "Aim to fill half your plate with colorful, non-starchy green vegetables at every main meal.",
+        meal_plan: [
+          { day: "Monday", breakfast: "Oats porridge with chia seeds", lunch: "Multigrain roti, Palak dal, cucumber salad", dinner: "Grilled tofu with stir-fried veggies" },
+          { day: "Tuesday", breakfast: "Moong dal chilla with green chutney", lunch: "Brown rice, Rajma (kidney beans), mixed veg", dinner: "Paneer bhurji with bell peppers & 1 roti" },
+          { day: "Wednesday", breakfast: "Vegetable poha with peanuts", lunch: "Quinoa pulao with vegetables and curd", dinner: "Clear vegetable soup & sautéed mushrooms" },
+          { day: "Thursday", breakfast: "Ragi dosa with sambar", lunch: "2 Rotis, Chana dal, bhindi masala, salad", dinner: "Baked paneer with steamed broccoli" },
+          { day: "Friday", breakfast: "Besan cheela with tomatoes", lunch: "Brown rice, Kala chana curry, cabbage thoran", dinner: "Tofu salad with olive oil dressing" },
+          { day: "Saturday", breakfast: "Broken wheat upma with veggies", lunch: "Multigrain roti, Dal makhani (light), green salad", dinner: "Stir-fried vegetables with quinoa" },
+          { day: "Sunday", breakfast: "Idli with vegetable sambar", lunch: "2 Rotis, mixed vegetable curry, dal, curd", dinner: "Sprouted salad and vegetable soup" }
+        ]
+      },
+      'non_veg': {
+        recommended: [
+          "Lean poultry & eggs (Chicken breast, Turkey, Egg whites)",
+          "Fatty fish (Salmon, Mackerel, Sardines, Tuna)",
+          "Leafy green vegetables & broccoli",
+          "Whole grains (Quinoa, Brown rice, Ragi, Oats)",
+          "Healthy fats (Olive oil, Walnuts, Avocados)"
+        ],
+        avoid: [
+          "Processed meats (Sausages, Bacon, Salami, Hot dogs)",
+          "Heavily fried meats (Fried chicken, Pakoras)",
+          "Sugary marinades, barbecue sauces, and sodas",
+          "Refined carbohydrates & white breads",
+          "Excessive red meat and saturated animal fats"
+        ],
+        breakfast: "2 Boiled egg whites with 1 slice of whole-wheat toast and sautéed spinach.",
+        lunch: "Grilled chicken breast salad with mixed greens, olive oil dressing, and a side of quinoa.",
+        dinner: "Baked salmon or fish tikka with steamed broccoli, asparagus, and sweet potato mash.",
+        snacks: "A boiled egg, Greek yogurt with berries, or roasted makhana.",
+        hydration: "Drink 8-10 glasses of water daily. Avoid sugary drinks and energy drinks.",
+        lifestyle: "Aim for 30 minutes of moderate aerobic exercise daily and maintain consistent meal timings.",
+        fruits_veg: "Pair every protein serving with at least two colorful fibrous vegetables to boost satiety and fiber.",
+        meal_plan: [
+          { day: "Monday", breakfast: "Scrambled egg whites with spinach", lunch: "Grilled chicken salad with quinoa", dinner: "Baked fish with steamed broccoli" },
+          { day: "Tuesday", breakfast: "Oatmeal with boiled egg whites", lunch: "Turkey meatballs with zucchini noodles", dinner: "Grilled chicken breast with roasted veggies" },
+          { day: "Wednesday", breakfast: "Whole wheat toast with poached eggs", lunch: "Tuna salad wrap in multigrain tortilla", dinner: "Stir-fried shrimp with asparagus" },
+          { day: "Thursday", breakfast: "Green smoothie and 2 boiled eggs", lunch: "Grilled chicken with brown rice & dal", dinner: "Baked salmon with sweet potato" },
+          { day: "Friday", breakfast: "Egg omelet with mushrooms and tomatoes", lunch: "Fish curry (light oil) with brown rice", dinner: "Roasted chicken with sautéed kale" },
+          { day: "Saturday", breakfast: "Multigrain roti with chicken bhurji", lunch: "Grilled turkey salad with olive oil", dinner: "Steamed fish with vegetable clear soup" },
+          { day: "Sunday", breakfast: "Poached eggs with avocado toast", lunch: "Chicken soup with vegetables and quinoa", dinner: "Lean grilled chicken with stir-fried beans" }
+        ]
+      }
+    },
+    'Heart Disease': {
+      'veg': {
+        recommended: [
+          "Soluble fiber grains (Oats, Barley, Quinoa)",
+          "Heart-healthy nuts & seeds (Walnuts, Flaxseeds, Chia seeds)",
+          "Legumes and pulses (Moong dal, Rajma, Chana, Lentils)",
+          "Berries and citrus fruits (Blueberries, Oranges, Amla)",
+          "Rich green leafy vegetables (Spinach, Methi, Sarson)"
+        ],
+        avoid: [
+          "High-sodium snacks, papads, pickles, and salted nuts",
+          "Trans fats, vanaspati (dalda), and reheated frying oils",
+          "Full-fat dairy, butter, ghee, and heavy creams",
+          "Packaged instant noodles, soups, and ready-to-eat meals",
+          "Refined bakery items and sugary desserts"
+        ],
+        breakfast: "Warm bowl of oats cooked with skim milk, topped with sliced apples, flaxseeds, and walnuts.",
+        lunch: "2 Multigrain rotis, low-sodium dal, steamed spinach, and a large bowl of fresh green salad.",
+        dinner: "Lentil soup (dal shorba) with sautéed vegetables and a side of brown rice or quinoa.",
+        snacks: "A handful of unsalted walnuts and almonds, or a fresh orange/pear.",
+        hydration: "Stay well-hydrated with 8 glasses of water. Avoid salted drinks and excessive caffeine.",
+        lifestyle: "Practice 30 minutes of daily cardio (walking/swimming) and meditation for blood pressure and stress control.",
+        fruits_veg: "Consume at least 5 servings of fresh fruits and vegetables daily for potassium and antioxidants.",
+        meal_plan: [
+          { day: "Monday", breakfast: "Oats porridge with walnuts & apple", lunch: "2 Rotis, yellow dal (low salt), bhindi sabzi", dinner: "Mixed vegetable soup with quinoa" },
+          { day: "Tuesday", breakfast: "Ragi porridge with chia seeds", lunch: "Brown rice, rajma curry (light), green salad", dinner: "Steamed broccoli and grilled paneer (low-fat)" },
+          { day: "Wednesday", breakfast: "Vegetable upma with peas and carrots", lunch: "Multigrain roti, palak dal, cucumber salad", dinner: "Lentil and vegetable stew" },
+          { day: "Thursday", breakfast: "Moong dal chilla with mint chutney", lunch: "Quinoa pulao with mixed vegetables", dinner: "Sautéed mushrooms and spinach with 1 roti" },
+          { day: "Friday", breakfast: "Smoothie bowl with berries and flaxseeds", lunch: "2 Rotis, chana dal, lauki (bottle gourd) sabzi", dinner: "Pumpkin soup and roasted makhana" },
+          { day: "Saturday", breakfast: "Broken wheat porridge with almonds", lunch: "Brown rice, mixed vegetable curry, curd", dinner: "Clear tomato soup and grilled tofu" },
+          { day: "Sunday", breakfast: "Idli with vegetable sambar (low salt)", lunch: "Multigrain roti, dal makhani (no cream), salad", dinner: "Steamed vegetables with brown rice" }
+        ]
+      },
+      'non_veg': {
+        recommended: [
+          "Omega-3 rich fatty fish (Salmon, Sardines, Mackerel, Tuna)",
+          "Skinless poultry (Chicken breast, Turkey breast)",
+          "Egg whites and low-fat protein sources",
+          "Soluble fiber grains (Oats, Quinoa, Brown rice)",
+          "Heart-healthy oils (Extra virgin olive oil, Avocado oil)"
+        ],
+        avoid: [
+          "Red meats (Beef, Lamb, Pork, Mutton) and organ meats",
+          "Processed meats (Bacon, Ham, Salami, Sausages)",
+          "Fried chicken, fish sticks, and battered seafood",
+          "High-sodium canned fish in brine or salted meats",
+          "Butter, lard, and heavy animal fat dressings"
+        ],
+        breakfast: "Omelet made with 3 egg whites and spinach, served with 1 slice of whole-wheat toast.",
+        lunch: "Grilled skinless chicken breast with quinoa, steamed broccoli, and olive oil dressing.",
+        dinner: "Baked salmon or mackerel seasoned with herbs, lemon juice, and roasted asparagus.",
+        snacks: "Unsalted almonds, walnut kernels, or fresh berries.",
+        hydration: "Drink 8 glasses of pure water daily. Avoid canned vegetable juices with high sodium.",
+        lifestyle: "Engage in regular aerobic exercises and maintain a heart-healthy sleep schedule of 7-8 hours.",
+        fruits_veg: "Ensure every meat meal is accompanied by double the portion of steamed green vegetables.",
+        meal_plan: [
+          { day: "Monday", breakfast: "3 Egg white spinach omelet", lunch: "Grilled chicken salad with olive oil", dinner: "Baked salmon with asparagus" },
+          { day: "Tuesday", breakfast: "Oats cooked with skim milk & walnuts", lunch: "Turkey wrap in whole-wheat tortilla", dinner: "Steamed fish with brown rice & veggies" },
+          { day: "Wednesday", breakfast: "Poached eggs on avocado toast", lunch: "Tuna salad (in water) with mixed greens", dinner: "Grilled chicken breast with roasted zucchini" },
+          { day: "Thursday", breakfast: "Scrambled egg whites with tomatoes", lunch: "Chicken clear soup with quinoa & vegetables", dinner: "Baked mackerel with sweet potato mash" },
+          { day: "Friday", breakfast: "Oatmeal with berries and chia seeds", lunch: "Grilled turkey breast with steamed broccoli", dinner: "Fish curry (olive oil, low salt) with 1 roti" },
+          { day: "Saturday", breakfast: "Boiled egg whites with multigrain toast", lunch: "Chicken and vegetable stir-fry with brown rice", dinner: "Baked salmon with green salad" },
+          { day: "Sunday", breakfast: "Spinach and mushroom egg white bhurji", lunch: "Grilled chicken with palak (spinach) and quinoa", dinner: "Steamed fish with clear vegetable soup" }
+        ]
+      }
+    },
+    'Hypertension': {
+      'veg': {
+        recommended: [
+          "Potassium-rich foods (Bananas, Sweet potatoes, Spinach)",
+          "Nitric oxide boosters (Beetroot, Garlic, Pomegranate)",
+          "Magnesium-rich grains (Oats, Quinoa, Ragi, Brown rice)",
+          "Low-sodium legumes (Moong dal, Masoor dal, Chickpeas)",
+          "Unsalted nuts and seeds (Flaxseeds, Pumpkin seeds, Walnuts)"
+        ],
+        avoid: [
+          "Table salt, rock salt, pickles (achar), and papads",
+          "Salted butter, cheese, and processed paneer",
+          "Canned soups, packaged sauces, and soy sauce",
+          "Bakery products with baking soda/baking powder (high sodium)",
+          "Excessive coffee, energy drinks, and alcohol"
+        ],
+        breakfast: "Bowl of oatmeal topped with sliced banana, pumpkin seeds, and a dash of cinnamon (no salt).",
+        lunch: "2 Unsalted rotis, bowl of low-sodium moong dal, beetroot salad, and steamed spinach.",
+        dinner: "Baked sweet potato with sautéed leafy greens and a bowl of vegetable soup (herbs for flavor).",
+        snacks: "Fresh pomegranate kernels, a banana, or unsalted pumpkin seeds.",
+        hydration: "Drink 8-10 glasses of water daily. Try fresh coconut water (in moderation) or hibiscus tea.",
+        lifestyle: "Practice deep breathing exercises (pranayama) and daily morning walks to naturally lower blood pressure.",
+        fruits_veg: "Focus on DASH diet principles by consuming 4-5 servings of fresh fruits and vegetables daily.",
+        meal_plan: [
+          { day: "Monday", breakfast: "Oatmeal with sliced banana & chia seeds", lunch: "2 Rotis (no salt), palak dal, beetroot salad", dinner: "Baked sweet potato with sautéed greens" },
+          { day: "Tuesday", breakfast: "Ragi porridge with apple slices", lunch: "Brown rice, yellow dal, lauki (bottle gourd) sabzi", dinner: "Clear vegetable soup and grilled tofu" },
+          { day: "Wednesday", breakfast: "Moong dal chilla (unsalted) with curd", lunch: "Quinoa with steamed broccoli & carrots", dinner: "Lentil soup with roasted pumpkin" },
+          { day: "Thursday", breakfast: "Fruit salad with pomegranate and guava", lunch: "2 Rotis, chana dal (low salt), cucumber salad", dinner: "Stir-fried vegetables with brown rice" },
+          { day: "Friday", breakfast: "Broken wheat upma with peas (no salt)", lunch: "Multigrain roti, mixed veg curry, beetroot raita", dinner: "Tomato and carrot soup with sautéed mushrooms" },
+          { day: "Saturday", breakfast: "Oats with berries and walnuts", lunch: "Brown rice, rajma (low sodium), green salad", dinner: "Steamed spinach and quinoa bowl" },
+          { day: "Sunday", breakfast: "Idli with tomato chutney (no salt)", lunch: "2 Rotis, dal makhani (light, no butter), salad", dinner: "Vegetable stew with sweet potato mash" }
+        ]
+      },
+      'non_veg': {
+        recommended: [
+          "Fresh white fish (Cod, Tilapia) and fatty fish (Salmon)",
+          "Unprocessed skinless chicken breast and turkey",
+          "Poached or boiled eggs (without added salt)",
+          "Potassium-rich vegetables (Spinach, Beetroot, Broccoli)",
+          "Whole grains and unsalted seeds"
+        ],
+        avoid: [
+          "Cured and salted meats (Bacon, Ham, Salami, Jerky)",
+          "Canned tuna or salmon packed in salted brine",
+          "Rotisserie chicken with salted skin and marinades",
+          "Frozen readymade meat patties and nuggets",
+          "Fish sauce, soy sauce, and barbecue sauces"
+        ],
+        breakfast: "2 Poached eggs with sliced avocado and unsalted whole-wheat toast.",
+        lunch: "Herb-rubbed grilled chicken breast with beetroot salad, steamed broccoli, and quinoa.",
+        dinner: "Baked white fish seasoned with garlic, lemon, and herbs, served with sweet potato mash.",
+        snacks: "Unsalted walnuts, a fresh apple, or boiled egg white.",
+        hydration: "Drink 8-10 glasses of water. Avoid salted buttermilk or sports drinks.",
+        lifestyle: "Monitor blood pressure regularly and avoid high-stress environments. Keep sleep consistent.",
+        fruits_veg: "Flavor meats using garlic, lemon, oregano, and rosemary instead of salt to protect blood vessels.",
+        meal_plan: [
+          { day: "Monday", breakfast: "Poached eggs on unsalted toast", lunch: "Grilled chicken with beetroot salad & quinoa", dinner: "Baked fish with lemon & steamed asparagus" },
+          { day: "Tuesday", breakfast: "Oatmeal with banana and egg whites", lunch: "Turkey breast with steamed broccoli & brown rice", dinner: "Grilled salmon with sweet potato mash" },
+          { day: "Wednesday", breakfast: "Scrambled eggs (no salt) with spinach", lunch: "Chicken clear soup with vegetables & 1 roti", dinner: "Baked tilapia with roasted zucchini" },
+          { day: "Thursday", breakfast: "Smoothie bowl with walnuts & 2 boiled eggs", lunch: "Grilled chicken breast with palak (spinach)", dinner: "Steamed fish with beetroot and carrot salad" },
+          { day: "Friday", breakfast: "Egg white omelet with herbs & tomatoes", lunch: "Unsalted chicken curry with brown rice", dinner: "Roasted turkey with sautéed kale" },
+          { day: "Saturday", breakfast: "Oats with sliced apples and almonds", lunch: "Grilled chicken salad with olive oil & lemon", dinner: "Baked fish with quinoa and green beans" },
+          { day: "Sunday", breakfast: "Boiled eggs with avocado slices", lunch: "Chicken and vegetable stew (herb seasoned)", dinner: "Grilled salmon with steamed broccoli" }
+        ]
+      }
+    },
+    'Asthma': {
+      'veg': {
+        recommended: [
+          "Anti-inflammatory roots (Turmeric, Ginger, Garlic)",
+          "Vitamin C rich fruits (Amla, Oranges, Guava, Kiwi)",
+          "Magnesium-rich greens (Spinach, Kale, Methi leaves)",
+          "Warm spiced teas (Green tea, Tulsi tea, Ginger tea)",
+          "Omega-3 plant sources (Walnuts, Flaxseeds, Chia seeds)"
+        ],
+        avoid: [
+          "Sulfur-preserved foods (Dried fruits, bottled lemon juice)",
+          "Ice-cold beverages, ice creams, and chilled foods",
+          "Artificial food colorings, preservatives, and MSG",
+          "Excessive dairy (if mucus-forming for your body)",
+          "Refined sugars and fried oily snacks"
+        ],
+        breakfast: "Warm bowl of ragi porridge with turmeric, honey, and crushed walnuts, accompanied by ginger tea.",
+        lunch: "2 Warm rotis, moong dal cooked with turmeric and garlic, sautéed spinach, and carrot salad.",
+        dinner: "Warm clear vegetable soup with ginger, garlic, and mushrooms, served with quinoa or brown rice.",
+        snacks: "Warm golden milk (turmeric milk), roasted makhana, or fresh guava.",
+        hydration: "Drink 8-10 glasses of warm or lukewarm water daily to keep respiratory airways moist and clear.",
+        lifestyle: "Practice breathing exercises like Anulom Vilom. Protect yourself from dust, pollen, and cold drafts.",
+        fruits_veg: "Eat colorful fruits and vegetables high in antioxidants to reduce airway inflammation.",
+        meal_plan: [
+          { day: "Monday", breakfast: "Warm ragi porridge with walnuts", lunch: "2 Rotis, moong dal with garlic, spinach sabzi", dinner: "Warm mushroom soup with quinoa" },
+          { day: "Tuesday", breakfast: "Oats cooked with turmeric and cinnamon", lunch: "Brown rice, yellow dal, carrot & beetroot thoran", dinner: "Sautéed tofu with broccoli & warm vegetable broth" },
+          { day: "Wednesday", breakfast: "Moong dal chilla with warm mint chutney", lunch: "Quinoa pulao with vegetables and ginger", dinner: "Lentil soup with roasted pumpkin and garlic" },
+          { day: "Thursday", breakfast: "Warm vegetable poha with peanuts", lunch: "2 Rotis, chana dal, bhindi sabzi, warm soup", dinner: "Baked paneer with steamed greens" },
+          { day: "Friday", breakfast: "Broken wheat upma with ginger & veggies", lunch: "Brown rice, rajma curry (light), warm salad", dinner: "Clear tomato & garlic soup with 1 roti" },
+          { day: "Saturday", breakfast: "Idli with warm sambar (rich in turmeric)", lunch: "Multigrain roti, palak dal, sautéed carrots", dinner: "Vegetable stew with brown rice" },
+          { day: "Sunday", breakfast: "Warm oats with apple and chia seeds", lunch: "2 Rotis, mixed dal, lauki sabzi, warm tea", dinner: "Warm quinoa broth with vegetables" }
+        ]
+      },
+      'non_veg': {
+        recommended: [
+          "Fatty fish rich in Omega-3 (Salmon, Mackerel, Sardines)",
+          "Warm chicken broth with garlic, ginger, and turmeric",
+          "Lean poultry (Chicken breast, Turkey breast)",
+          "Eggs cooked with black pepper and turmeric",
+          "Vitamin E rich seeds and anti-inflammatory vegetables"
+        ],
+        avoid: [
+          "Processed and cured meats containing sulfites and nitrites",
+          "Cold meat cuts, refrigerated deli meats, and chilled seafood",
+          "Deep fried battered fish and fried chicken wings",
+          "Heavy cream-based meat gravies and cheesy sauces",
+          "Shellfish (if prone to allergic airway triggering)"
+        ],
+        breakfast: "2 Scrambled eggs cooked with a pinch of turmeric and black pepper, with warm whole-wheat toast.",
+        lunch: "Warm chicken clear soup with ginger and garlic, served with grilled chicken breast and quinoa.",
+        dinner: "Baked salmon seasoned with rosemary and garlic, served with steamed broccoli and warm broth.",
+        snacks: "Warm chicken broth, boiled egg with black pepper, or walnuts.",
+        hydration: "Sip warm herbal teas, ginger-infused water, or warm chicken broth throughout the day.",
+        lifestyle: "Avoid exercising in cold, dry air. Always warm up properly before physical activities.",
+        fruits_veg: "Include garlic, onions, and ginger liberally in meat preparations to open respiratory airways.",
+        meal_plan: [
+          { day: "Monday", breakfast: "Turmeric scrambled eggs with toast", lunch: "Warm chicken broth, grilled chicken, quinoa", dinner: "Baked salmon with steamed broccoli" },
+          { day: "Tuesday", breakfast: "Warm oatmeal with boiled eggs", lunch: "Turkey breast with ginger-spiced vegetable stir-fry", dinner: "Steamed fish with warm clear soup" },
+          { day: "Wednesday", breakfast: "Poached eggs with black pepper & spinach", lunch: "Chicken clear soup with brown rice & veggies", dinner: "Baked mackerel with asparagus" },
+          { day: "Thursday", breakfast: "Oats with walnuts & 2 boiled eggs", lunch: "Grilled chicken with palak (spinach) & roti", dinner: "Salmon stew with vegetables and garlic" },
+          { day: "Friday", breakfast: "Egg omelet with mushrooms and herbs", lunch: "Chicken curry (light ginger/garlic gravy) & rice", dinner: "Roasted turkey with warm vegetable broth" },
+          { day: "Saturday", breakfast: "Warm multigrain toast with chicken bhurji", lunch: "Grilled chicken salad with warm olive oil dressing", dinner: "Steamed fish with sautéed kale" },
+          { day: "Sunday", breakfast: "Boiled eggs with warm ginger tea & toast", lunch: "Chicken and vegetable soup with quinoa", dinner: "Baked salmon with roasted sweet potato" }
+        ]
+      }
+    },
+    'Obesity': {
+      'veg': {
+        recommended: [
+          "High-fiber vegetables (Spinach, Cucumber, Broccoli, Cabbage)",
+          "Complex carbohydrates (Oats, Quinoa, Ragi, Millets)",
+          "Low-fat plant proteins (Moong dal, Tofu, Lentils, Chickpeas)",
+          "Metabolism boosters (Green tea, Warm lemon water, Chia)",
+          "Low-calorie fruits (Apples, Papaya, Watermelon, Berries)"
+        ],
+        avoid: [
+          "Refined flour (Maida), white bread, pizzas, and burgers",
+          "Deep-fried foods (Samosas, French fries, Bhatures, Poories)",
+          "Sugary drinks, sodas, milkshakes, and packaged fruit juices",
+          "High-calorie sweets, chocolates, cakes, and ice creams",
+          "Excessive butter, ghee, cheese, and mayonnaise"
+        ],
+        breakfast: "Sprouted moong salad with cucumber and lemon juice, or a bowl of oats cooked in water with berries.",
+        lunch: "1 Multigrain roti, large bowl of boiled dal, generous portion of steamed vegetables, and cucumber raita.",
+        dinner: "Clear vegetable soup and grilled tofu salad with zero-oil lemon and herb dressing (eat before 8 PM).",
+        snacks: "Roasted makhana, green tea, cucumber slices, or a small apple.",
+        hydration: "Drink 10-12 glasses of water daily. Drink 2 glasses of water 30 minutes before meals to boost satiety.",
+        lifestyle: "Aim for 10,000 steps daily along with 45 minutes of cardio or strength training. Maintain consistency.",
+        fruits_veg: "Start every meal with a large raw vegetable salad (cucumber, carrots, tomatoes) to fill up on fiber.",
+        meal_plan: [
+          { day: "Monday", breakfast: "Oats in water with berries & chia seeds", lunch: "1 Roti, large bowl palak dal, cucumber salad", dinner: "Clear vegetable soup & grilled tofu" },
+          { day: "Tuesday", breakfast: "Sprouted moong salad with lemon", lunch: "Quinoa with steamed broccoli & mixed vegetables", dinner: "Sautéed mushrooms and cabbage soup" },
+          { day: "Wednesday", breakfast: "Moong dal chilla (no oil) with mint", lunch: "1 Multigrain roti, rajma curry (light), large salad", dinner: "Steamed vegetables with tofu cubes" },
+          { day: "Thursday", breakfast: "Ragi porridge (unsweetened) with apple", lunch: "Brown rice (small bowl), yellow dal, bhindi sabzi", dinner: "Tomato soup and roasted makhana" },
+          { day: "Friday", breakfast: "Vegetable poha with lots of peas/carrots", lunch: "1 Roti, chana dal, lauki sabzi, green salad", dinner: "Clear mushroom broth with spinach" },
+          { day: "Saturday", breakfast: "Besan cheela with tomatoes & green tea", lunch: "Quinoa pulao with vegetables and curd", dinner: "Grilled paneer (low fat) with broccoli" },
+          { day: "Sunday", breakfast: "Broken wheat upma with vegetables", lunch: "1 Roti, mixed dal, cabbage thoran, cucumber raita", dinner: "Sprouted vegetable salad & clear soup" }
+        ]
+      },
+      'non_veg': {
+        recommended: [
+          "Lean skinless chicken breast and turkey breast",
+          "White fish (Cod, Tilapia, Rohu) and grilled salmon",
+          "Egg whites (high protein, zero fat, high satiety)",
+          "High-fiber green vegetables (Broccoli, Spinach, Zucchini)",
+          "Complex grains in controlled portions (Quinoa, Oats)"
+        ],
+        avoid: [
+          "Fatty cuts of meat (Pork belly, Ribeye steak, Lamb chops)",
+          "Fried chicken, battered fish, and chicken nuggets",
+          "Processed meats (Sausages, Salami, Hot dogs, Bacon)",
+          "Heavy creamy meat gravies, butter chicken, and mayo",
+          "Sugary marinades, sugary drinks, and alcohol"
+        ],
+        breakfast: "3 Boiled egg whites with 1 cup of green tea and sautéed spinach or cucumber slices.",
+        lunch: "Grilled skinless chicken breast salad with lots of leafy greens, cucumber, and 2 tbsp quinoa.",
+        dinner: "Steamed or baked white fish with boiled broccoli and asparagus (light lemon dressing, no oil).",
+        snacks: "2 Boiled egg whites, green tea, or celery sticks with hummus.",
+        hydration: "Drink 10-12 glasses of water. Replace all beverages with water or unsweetened green tea.",
+        lifestyle: "Combine cardio with resistance training to build metabolism-boosting muscle mass. Sleep 8 hours.",
+        fruits_veg: "Fill 70% of your dinner plate with steamed or raw green vegetables to maximize volume with low calories.",
+        meal_plan: [
+          { day: "Monday", breakfast: "3 Boiled egg whites & green tea", lunch: "Grilled chicken breast salad with cucumber", dinner: "Baked fish with steamed broccoli" },
+          { day: "Tuesday", breakfast: "Oatmeal with 2 poached egg whites", lunch: "Turkey breast slices with zucchini noodles", dinner: "Grilled chicken with roasted asparagus" },
+          { day: "Wednesday", breakfast: "Scrambled egg whites with spinach", lunch: "Tuna salad (in water) with leafy greens", dinner: "Steamed tilapia with clear vegetable soup" },
+          { day: "Thursday", breakfast: "Green smoothie and 2 boiled eggs", lunch: "Grilled chicken with 1 small bowl brown rice & dal", dinner: "Baked salmon with sautéed kale" },
+          { day: "Friday", breakfast: "Egg white omelet with mushrooms", lunch: "Chicken clear soup with lots of vegetables", dinner: "Roasted turkey breast with green salad" },
+          { day: "Saturday", breakfast: "Multigrain toast with egg white bhurji", lunch: "Grilled chicken breast with steamed cauliflower", dinner: "Steamed fish with cucumber salad" },
+          { day: "Sunday", breakfast: "Poached eggs on spinach & green tea", lunch: "Chicken and vegetable stew (zero fat)", dinner: "Grilled lean chicken with broccoli bowl" }
+        ]
+      }
+    }
+  };
+
+  function setDietMode(mode) {
+    currentMode = mode;
+    
+    // Update button active states
+    document.getElementById('btn-veg').classList.remove('active');
+    document.getElementById('btn-non-veg').classList.remove('active');
+    
+    if (mode === 'veg') {
+      document.getElementById('btn-veg').classList.add('active');
+    } else {
+      document.getElementById('btn-non-veg').classList.add('active');
+    }
+    
+    // Refresh display
+    updateDietDisplay();
+  }
+
+  function showDiet(diseaseName, cardElement) {
+    currentDisease = diseaseName;
+
+    // Highlight the active card
+    const cards = document.querySelectorAll('.disease-card');
+    cards.forEach(card => card.classList.remove('active'));
+    if(cardElement) {
+      cardElement.classList.add('active');
+    }
+
+    // Show the diet content area
+    const contentArea = document.getElementById('diet-content-area');
+    contentArea.style.display = 'block';
+
+    // Update display with animation
+    updateDietDisplay();
+
+    // Smooth scroll to the content area
+    contentArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function updateDietDisplay() {
+    const data = dietData[currentDisease]?.[currentMode];
+    if (!data) return;
+
+    // Trigger subtle fade-in re-animation
+    const contentArea = document.getElementById('diet-content-area');
+    contentArea.classList.remove('fade-in');
+    void contentArea.offsetWidth; // trigger reflow
+    contentArea.classList.add('fade-in');
+
+    // Title
+    document.getElementById('diet-disease-name').innerText = currentDisease;
+
+    // Recommended List
+    const recList = document.getElementById('list-recommended');
+    recList.innerHTML = data.recommended.map(item => `<li><i class='bx bx-check'></i> ${item}</li>`).join('');
+
+    // Avoid List
+    const avoidList = document.getElementById('list-avoid');
+    avoidList.innerHTML = data.avoid.map(item => `<li><i class='bx bx-x'></i> ${item}</li>`).join('');
+
+    // Daily Suggestions
+    document.getElementById('sugg-breakfast').innerText = data.breakfast;
+    document.getElementById('sugg-lunch').innerText = data.lunch;
+    document.getElementById('sugg-dinner').innerText = data.dinner;
+    document.getElementById('sugg-snacks').innerText = data.snacks;
+
+    // Tips
+    document.getElementById('tip-hydration').innerText = data.hydration;
+    document.getElementById('tip-lifestyle').innerText = data.lifestyle;
+    document.getElementById('tip-fruits').innerText = data.fruits_veg;
+
+    // 7-Day Meal Plan Table
+    const tbody = document.getElementById('meal-plan-tbody');
+    tbody.innerHTML = data.meal_plan.map(row => `
+      <tr>
+        <td><strong>${row.day}</strong></td>
+        <td>${row.breakfast}</td>
+        <td>${row.lunch}</td>
+        <td>${row.dinner}</td>
+      </tr>
+    `).join('');
+  }
+</script>
+{% endblock %}
