@@ -74,24 +74,9 @@ def google_login():
     client_id = current_app.config.get('GOOGLE_CLIENT_ID')
     client_secret = current_app.config.get('GOOGLE_CLIENT_SECRET')
 
-    # If Google OAuth credentials are not configured in .env, run friendly local test login mode
     if not client_id or not client_secret:
-        logging.info("GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not set in .env. Running local Google test authentication.")
-        test_email = "google.user@example.com"
-        test_name = "Google User"
-        test_id = "google_test_1020304050"
-        
-        user = get_or_create_google_user(test_email, test_name, test_id)
-        if user:
-            login_user(user, remember=False)
-            session.permanent = False
-            session['email'] = user.email
-            update_login_stats(user)
-            flash("Logged in successfully as Guest! (Guest mode active: set GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET in .env for live Google API auth)", "success")
-            return redirect(url_for('home'))
-        else:
-            flash("Failed to authenticate with Google.", "danger")
-            return redirect(url_for('auth.login'))
+        flash("Google Login is not configured yet. Please continue as a Guest or register an account.", "warning")
+        return redirect(url_for('auth.login'))
 
     # Live Google OAuth 2.0 Flow
     state = secrets.token_hex(16)
@@ -109,6 +94,27 @@ def google_login():
 
     google_auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params)}"
     return redirect(google_auth_url)
+
+@auth_bp.route('/guest')
+def guest_login():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+        
+    test_email = "guest.user@example.com"
+    test_name = "Guest User"
+    test_id = "guest_test_1020304050"
+    
+    user = get_or_create_google_user(test_email, test_name, test_id)
+    if user:
+        login_user(user, remember=False)
+        session.permanent = False
+        session['email'] = user.email
+        update_login_stats(user)
+        flash("Logged in successfully as Guest!", "success")
+        return redirect(url_for('home'))
+    else:
+        flash("Failed to authenticate as Guest.", "danger")
+        return redirect(url_for('auth.login'))
 
 
 @auth_bp.route('/google/callback')
