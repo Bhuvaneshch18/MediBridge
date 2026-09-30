@@ -1414,10 +1414,12 @@ def chat():
                 available_keys.append(k)
                 
         if not available_keys:
-            available_keys = [os.getenv('GEMINI_API_KEY_1')]
+            raise ValueError("Zero API keys found. GEMINI_API_KEY_1 is missing or not configured for Production.")
             
         max_retries = len(available_keys) + 2
         current_key_idx = 0
+        if 'GEMINI_API_KEY' in os.environ:
+            del os.environ['GEMINI_API_KEY']
         current_client = genai.Client(api_key=available_keys[0])
         
         for attempt in range(max_retries):
@@ -1794,10 +1796,12 @@ def analyze_prescription():
                 available_keys.append(k)
                 
         if not available_keys:
-            available_keys = [os.getenv('GEMINI_API_KEY_1')]
+            raise ValueError("Zero API keys found. GEMINI_API_KEY_1 is missing or not configured for Production.")
             
         max_retries = len(available_keys) + 2
         current_key_idx = 0
+        if 'GEMINI_API_KEY' in os.environ:
+            del os.environ['GEMINI_API_KEY']
         current_client = genai.Client(api_key=available_keys[0])
         
         for attempt in range(max_retries):
