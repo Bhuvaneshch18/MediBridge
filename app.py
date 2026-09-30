@@ -1408,17 +1408,17 @@ def chat():
         
         # Collect all API keys dynamically
         available_keys = []
-        for key_name in ['GEMINI_API_KEY', 'GEMINI_API_KEY_1', 'GEMINI_API_KEY_2', 'GEMINI_API_KEY_3', 'GEMINI_API_KEY_4', 'GEMINI_API_KEY_5']:
+        for key_name in ['GEMINI_API_KEY_1', 'GEMINI_API_KEY_2', 'GEMINI_API_KEY_3']:
             k = os.getenv(key_name)
             if k and k not in available_keys:
                 available_keys.append(k)
                 
         if not available_keys:
-            available_keys = [os.getenv('GEMINI_API_KEY')]
+            available_keys = [os.getenv('GEMINI_API_KEY_1')]
             
         max_retries = len(available_keys) + 2
         current_key_idx = 0
-        current_client = client if available_keys[0] == os.getenv('GEMINI_API_KEY') else genai.Client(api_key=available_keys[0])
+        current_client = genai.Client(api_key=available_keys[0])
         
         for attempt in range(max_retries):
             try:
@@ -1788,17 +1788,17 @@ def analyze_prescription():
         
         # Collect all API keys dynamically
         available_keys = []
-        for key_name in ['GEMINI_API_KEY', 'GEMINI_API_KEY_1', 'GEMINI_API_KEY_2', 'GEMINI_API_KEY_3', 'GEMINI_API_KEY_4', 'GEMINI_API_KEY_5']:
+        for key_name in ['GEMINI_API_KEY_1', 'GEMINI_API_KEY_2', 'GEMINI_API_KEY_3']:
             k = os.getenv(key_name)
             if k and k not in available_keys:
                 available_keys.append(k)
                 
         if not available_keys:
-            available_keys = [os.getenv('GEMINI_API_KEY')]
+            available_keys = [os.getenv('GEMINI_API_KEY_1')]
             
         max_retries = len(available_keys) + 2
         current_key_idx = 0
-        current_client = client if available_keys[0] == os.getenv('GEMINI_API_KEY') else genai.Client(api_key=available_keys[0])
+        current_client = genai.Client(api_key=available_keys[0])
         
         for attempt in range(max_retries):
             try:
