@@ -1449,7 +1449,7 @@ def chat():
                         time.sleep((attempt + 1) * 5)
                         continue
                         
-                raise inner_e
+                raise Exception(f"All {len(available_keys)} API keys were rejected by Google. Last error: {inner_e}")
                 
     except Exception as e:
         print(f"Chat error: {e}")
@@ -1851,7 +1851,7 @@ def analyze_prescription():
                         time.sleep((attempt + 1) * 5)
                         continue
                         
-                raise inner_e
+                raise Exception(f"All {len(available_keys)} API keys were rejected by Google. Last error: {inner_e}")
         
     except Exception as e:
         print(f"Error in analyze_prescription:")
