@@ -33,11 +33,7 @@ import logging
 load_dotenv()
 print("✓ Environment variables loaded")
 
-if os.environ.get("GEMINI_API_KEY"):
-    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-else:
-    client = genai.Client()
-
+# Global client removed to prevent Vercel boot crashes
 app = Flask(__name__)
 app.config.from_object(Config)
 
@@ -1389,8 +1385,18 @@ def support():
 @app.route('/debug_models')
 def debug_models():
     try:
+        available_keys = []
+        for key_name in ['GEMINI_API_KEY_1', 'GEMINI_API_KEY_2', 'GEMINI_API_KEY_3']:
+            k = os.getenv(key_name)
+            if k and k not in available_keys:
+                available_keys.append(k)
+        if not available_keys:
+            available_keys = [os.getenv('GEMINI_API_KEY_1')]
+        if not available_keys[0]:
+            return "No keys configured."
+        temp_client = genai.Client(api_key=available_keys[0])
         models = []
-        for m in client.models.list_models():
+        for m in temp_client.models.list_models():
             models.append(m.name)
         return jsonify(models)
     except Exception as e:
