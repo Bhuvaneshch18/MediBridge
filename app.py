@@ -1426,7 +1426,7 @@ def chat():
                 return jsonify({'response': response.text})
             except Exception as inner_e:
                 error_msg = str(inner_e).lower()
-                is_rate_limit = "429" in error_msg or "resourceexhausted" in error_msg or "quota" in error_msg
+                is_rate_limit = "429" in error_msg or "resourceexhausted" in error_msg or "quota" in error_msg or "403" in error_msg or "permission" in error_msg or "400" in error_msg
                 is_unavailable = "503" in error_msg or "unavailable" in error_msg
                 
                 if is_rate_limit:
@@ -1832,7 +1832,7 @@ def analyze_prescription():
                 
             except Exception as inner_e:
                 error_msg = str(inner_e).lower()
-                is_rate_limit = "429" in error_msg or "resourceexhausted" in error_msg or "quota" in error_msg
+                is_rate_limit = "429" in error_msg or "resourceexhausted" in error_msg or "quota" in error_msg or "403" in error_msg or "permission" in error_msg or "400" in error_msg
                 is_unavailable = "503" in error_msg or "unavailable" in error_msg
                 
                 if is_rate_limit:
