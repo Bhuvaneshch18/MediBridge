@@ -1788,7 +1788,7 @@ def analyze_prescription():
         
         # Collect all API keys dynamically
         available_keys = []
-        for key_name in ['GEMINI_API_KEY', 'GEMINI_API_KEY_2', 'GEMINI_API_KEY_3', 'GEMINI_API_KEY_4', 'GEMINI_API_KEY_5']:
+        for key_name in ['GEMINI_API_KEY', 'GEMINI_API_KEY_1', 'GEMINI_API_KEY_2', 'GEMINI_API_KEY_3', 'GEMINI_API_KEY_4', 'GEMINI_API_KEY_5']:
             k = os.getenv(key_name)
             if k and k not in available_keys:
                 available_keys.append(k)
