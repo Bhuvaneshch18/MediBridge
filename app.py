@@ -1113,16 +1113,16 @@ def assessment(disease_id):
         try:
             if disease_id in ['heart', 'diabetes']:
                 
+                def safe_float(val, default=0.0):
+                    try:
+                        return float(val)
+                    except (ValueError, TypeError):
+                        return float(default)
+                        
                 if disease_id == 'heart':
                     model_path = os.path.join(app.root_path, 'knn_heart.pkl')
                     model_loaded = joblib.load(model_path)
                     
-                    def safe_float(val, default=0.0):
-                        try:
-                            return float(val)
-                        except (ValueError, TypeError):
-                            return float(default)
-                            
                     features = [
                         safe_float(form_data.get('age', 0)),
                         safe_float(form_data.get('sex', 0)),
