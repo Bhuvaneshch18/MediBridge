@@ -124,11 +124,15 @@ def predict_asthma(form_data):
         # Make prediction
         prediction_num = _asthma_model.predict(input_df)[0]
         proba = _asthma_model.predict_proba(input_df)[0]
-        prob_pct = int(max(proba) * 100)
-        if prob_pct > 95:
-            prob_pct = 95
-        elif prob_pct < 5:
-            prob_pct = 5
+        
+        # Always use the probability of the positive class (Asthma = index 1)
+        # Assuming classes are ordered [0, 1] for binary
+        if len(proba) > 1:
+            pos_prob = proba[1]
+        else:
+            pos_prob = proba[0]
+            
+        prob_pct = int(pos_prob * 100)
         
         # Map numeric label to string
         stage_name = _asthma_label_mapping.get(int(prediction_num), "Unknown")

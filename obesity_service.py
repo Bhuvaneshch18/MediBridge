@@ -171,10 +171,6 @@ def predict_obesity(form_data):
         
         proba = model.predict_proba(X)[0]
         prob_pct = int(max(proba) * 100)
-        if prob_pct > 95:
-            prob_pct = 95
-        elif prob_pct < 5:
-            prob_pct = 5
         
         advice = get_advice_for_prediction(prediction_label)
         

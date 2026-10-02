@@ -1159,10 +1159,6 @@ def assessment(disease_id):
                 pos_idx = np.where(classes == 1)[0][0] if 1 in classes else 1
                 pos_prob = proba[pos_idx]
                 prob_pct = int(pos_prob * 100)
-                if prob_pct > 95:
-                    prob_pct = 95
-                elif prob_pct < 5:
-                    prob_pct = 5
                 model_name_str = "KNN (K-Nearest Neighbors)"
                 if prob_pct >= 70:
                     riskLevel = "High"
