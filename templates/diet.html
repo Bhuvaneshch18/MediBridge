@@ -361,7 +361,10 @@
   <div id="diet-content-area" class="diet-content-area fade-in">
     
     <div class="diet-header-row">
-      <h2 class="diet-section-title" id="diet-title"><i class='bx bx-restaurant'></i> <span id="diet-disease-name">Diabetes</span> Diet Plan</h2>
+      <h2 class="diet-section-title" id="diet-title">
+          <button onclick="hideDiet()" title="Go Back" style="background:var(--color-primary-light);border:none;cursor:pointer;font-size:1.5rem;color:var(--color-primary);margin-right:15px;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:0.3s;"><i class='bx bx-arrow-back'></i></button>
+          <i class='bx bx-restaurant'></i> <span id="diet-disease-name">Diabetes</span> Diet Plan
+        </h2>
       
       <!-- Veg / Non-Veg Toggle -->
       <div class="diet-toggle-container">
@@ -884,6 +887,12 @@
     updateDietDisplay();
   }
 
+  function hideDiet() {
+    document.getElementById('diet-content-area').style.display = 'none';
+    document.querySelector('.disease-grid').style.display = 'grid';
+    document.querySelector('.diet-hero').scrollIntoView({ behavior: 'smooth' });
+  }
+
   function showDiet(diseaseName, cardElement) {
     currentDisease = diseaseName;
 
@@ -893,6 +902,9 @@
     if(cardElement) {
       cardElement.classList.add('active');
     }
+
+    // Hide the grid
+    document.querySelector('.disease-grid').style.display = 'none';
 
     // Show the diet content area
     const contentArea = document.getElementById('diet-content-area');
