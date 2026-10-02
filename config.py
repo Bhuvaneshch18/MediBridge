@@ -40,6 +40,11 @@ class Config:
         db_name = os.environ.get('DATABASE_NAME', 'medibridge')
         SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+        "pool_timeout": 20
+    }
 
     # Google OAuth 2.0 Credentials
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
