@@ -168,14 +168,7 @@
           <div class="metric-title">Risk Probability</div>
           <div class="metric-value">{{ result.probability }}%</div>
         </div>
-        <div class="metric-box">
-          <div class="metric-title">Peak Flow</div>
-          <div class="metric-value">{{ result.input_data.Peak_Expiratory_Flow | int }} L/min</div>
-        </div>
-        <div class="metric-box">
-          <div class="metric-title">FeNO Level</div>
-          <div class="metric-value">{{ result.input_data.FeNO_Level | int }} ppb</div>
-        </div>
+
         {% if result.input_data.BMI > 0 %}
         <div class="metric-box">
           <div class="metric-title">Calculated BMI</div>
